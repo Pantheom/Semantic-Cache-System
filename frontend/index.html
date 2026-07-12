@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AXIOM Semantic Cache — Test Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0d14;
+      --surface:   #111520;
+      --surface2:  #161c2d;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --ram:       #10b981;
+      --db:        #6366f1;
+      --llm:       #f59e0b;
+      --accent:    #38bdf8;
+      --danger:    #f43f5e;
+      --grad:      linear-gradient(135deg, #6366f1 0%, #38bdf8 100%);
+    }
+
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 64px 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--grad);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: #fff;
+    }
+    header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
+    header span { font-size: 12px; color: var(--muted); margin-left: 4px; }
+    .status-dot { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); transition: background .4s; }
+    .dot.online { background: var(--ram); box-shadow: 0 0 8px var(--ram); }
+
+    aside {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex; flex-direction: column; gap: 24px;
+      overflow-y: auto;
+    }
+    aside::-webkit-scrollbar { width: 4px; }
+    aside::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 10px;
+    }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 10px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-card .val { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; transition: color .3s; }
+    .stat-card .lbl { font-size: 10px; color: var(--muted); }
+    .stat-card.ram   .val { color: var(--ram); }
+    .stat-card.db    .val { color: var(--db); }
+    .stat-card.llm   .val { color: var(--llm); }
+    .stat-card.total .val { color: var(--accent); }
+
+    .hit-rate-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .hit-rate-bar { height: 6px; border-radius: 99px; background: var(--surface2); overflow: hidden; }
+    .hit-rate-fill { height: 100%; border-radius: 99px; background: var(--grad); width: 0%; transition: width .6s cubic-bezier(.4,0,.2,1); }
+    .hit-rate-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+    .legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .badge-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .badge-dot.ram { background: var(--ram); box-shadow: 0 0 6px var(--ram); }
+    .badge-dot.db  { background: var(--db);  box-shadow: 0 0 6px var(--db); }
+    .badge-dot.llm { background: var(--llm); box-shadow: 0 0 6px var(--llm); }
+
+    .quick-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); border-radius: 8px; padding: 7px 10px;
+      font-size: 11px; text-align: left; cursor: pointer;
+      transition: border-color .2s, color .2s;
+      font-family: 'Inter', sans-serif; width: 100%;
+    }
+    .quick-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    main { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+
+    #feed {
+      flex: 1; overflow-y: auto;
+      padding: 24px 28px;
+      display: flex; flex-direction: column; gap: 16px;
+      scroll-behavior: smooth;
+    }
+    #feed::-webkit-scrollbar { width: 4px; }
+    #feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; color: var(--muted); margin: auto;
+    }
+    .empty-state .icon { font-size: 48px; opacity: .4; }
+    .empty-state p { font-size: 14px; }
+
+    .query-block { display: flex; flex-direction: column; gap: 8px; animation: fadeUp .3s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .query-bubble {
+      align-self: flex-end;
+      background: var(--grad); color: #fff;
+      padding: 10px 14px;
+      border-radius: 14px 14px 4px 14px;
+      font-size: 14px; max-width: 70%; line-height: 1.5; word-break: break-word;
+    }
+
+    .response-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 4px 14px 14px 14px;
+      padding: 14px 16px; max-width: 85%;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .response-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .source-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 99px;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+    }
+    .source-badge.RAM { background: rgba(16,185,129,.15); color: var(--ram); border: 1px solid rgba(16,185,129,.3); }
+    .source-badge.DB  { background: rgba(99,102,241,.15);  color: var(--db);  border: 1px solid rgba(99,102,241,.3); }
+    .source-badge.LLM { background: rgba(245,158,11,.15);  color: var(--llm); border: 1px solid rgba(245,158,11,.3); }
+    .source-badge.ERR { background: rgba(244,63,94,.15);   color: var(--danger); border: 1px solid rgba(244,63,94,.3); }
+
+    .similarity { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .latency    { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+    .response-text {
+      font-size: 13px; line-height: 1.65; color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      white-space: pre-wrap; word-break: break-word;
+    }
+
+    .spinner-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 4px 14px 14px 14px;
+      padding: 14px 16px; max-width: 85%;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--muted); font-size: 13px; animation: fadeUp .3s ease;
+    }
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .input-area {
+      padding: 16px 24px 20px; border-top: 1px solid var(--border);
+      background: var(--surface); display: flex; gap: 10px; align-items: flex-end;
+    }
+    #prompt-input {
+      flex: 1; resize: none; outline: none;
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; font-family: 'Inter', sans-serif;
+      font-size: 14px; line-height: 1.5; max-height: 160px;
+      transition: border-color .2s;
+    }
+    #prompt-input:focus { border-color: var(--accent); }
+    #prompt-input::placeholder { color: var(--muted); }
+
+    #send-btn {
+      height: 44px; width: 44px; border-radius: 12px;
+      background: var(--grad); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity .2s, transform .15s; flex-shrink: 0;
+    }
+    #send-btn:hover { opacity: .85; transform: scale(1.05); }
+    #send-btn:active { transform: scale(.95); }
+    #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #send-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+    .hint { font-size: 11px; color: var(--muted); padding: 0 28px 6px; }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="logo">AX</div>
+    <h1>AXIOM Semantic Cache <span>/ Test Console</span></h1>
+    <div class="status-dot">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">Connecting…</span>
+    </div>
+  </header>
+
+  <aside>
+    <div>
+      <div class="section-label">Session Stats</div>
+      <div class="stat-grid">
+        <div class="stat-card total"><div class="val" id="s-total">0</div><div class="lbl">Total Queries</div></div>
+        <div class="stat-card ram">  <div class="val" id="s-ram">0</div><div class="lbl">RAM Hits</div></div>
+        <div class="stat-card db">   <div class="val" id="s-db">0</div><div class="lbl">DB Hits</div></div>
+        <div class="stat-card llm">  <div class="val" id="s-llm">0</div><div class="lbl">LLM Misses</div></div>
+      </div>
+    </div>
+
+    <div class="hit-rate-wrap">
+      <div class="section-label">Cache Hit Rate</div>
+      <div class="hit-rate-bar"><div class="hit-rate-fill" id="hit-bar"></div></div>
+      <div class="hit-rate-label"><span id="miss-pct">0% misses</span><span id="hit-pct">0% hits</span></div>
+    </div>
+
+    <div>
+      <div class="section-label">Source Legend</div>
+      <div class="legend">
+        <div class="legend-item"><div class="badge-dot ram"></div>RAM Exact Hit — In-memory match</div>
+        <div class="legend-item"><div class="badge-dot db"></div>DB Semantic Hit — Vector similarity</div>
+        <div class="legend-item"><div class="badge-dot llm"></div>LLM Miss — Freshly generated</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Quick Prompts</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="quick-btn" onclick="fillPrompt('Write a haiku about caching.')">Write a haiku about caching.</button>
+        <button class="quick-btn" onclick="fillPrompt('Explain semantic search in one sentence.')">Explain semantic search.</button>
+        <button class="quick-btn" onclick="fillPrompt('What is the capital of France?')">Capital of France?</button>
+        <button class="quick-btn" onclick="fillPrompt('Write a jazz number about the hustle and bustle of city life.')">Jazz about city life.</button>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div id="feed">
+      <div class="empty-state" id="empty">
+        <div class="icon">⚡</div>
+        <p>Send a prompt to test the semantic cache</p>
+      </div>
+    </div>
+    <div class="hint">Press <strong>Enter</strong> to send &nbsp;·&nbsp; <strong>Shift+Enter</strong> for new line</div>
+    <div class="input-area">
+      <textarea id="prompt-input" rows="1" placeholder="Type a prompt…"></textarea>
+      <button id="send-btn" title="Send" onclick="sendQuery()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:8000';
+  let stats = { total: 0, ram: 0, db: 0, llm: 0 };
+
+  async function checkHealth() {
+    try {
+      const r = await fetch(API + '/docs', { signal: AbortSignal.timeout(2000) });
+      setOnline(r.ok);
+    } catch { setOnline(false); }
+  }
+  function setOnline(on) {
+    document.getElementById('status-dot').className = 'dot' + (on ? ' online' : '');
+    document.getElementById('status-text').textContent = on ? 'API Online' : 'API Offline';
+  }
+  checkHealth();
+  setInterval(checkHealth, 5000);
+
+  const ta = document.getElementById('prompt-input');
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+  });
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+  });
+
+  function fillPrompt(text) {
+    ta.value = text;
+    ta.dispatchEvent(new Event('input'));
+    ta.focus();
+  }
+
+  async function sendQuery() {
+    const prompt = ta.value.trim();
+    if (!prompt) return;
+
+    const feed = document.getElementById('feed');
+    document.getElementById('empty')?.remove();
+
+    const block = document.createElement('div');
+    block.className = 'query-block';
+
+    const qBubble = document.createElement('div');
+    qBubble.className = 'query-bubble';
+    qBubble.textContent = prompt;
+    block.appendChild(qBubble);
+
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner-card';
+    spinner.innerHTML = '<div class="spinner"></div> Querying cache…';
+    block.appendChild(spinner);
+
+    feed.appendChild(block);
+    feed.scrollTop = feed.scrollHeight;
+
+    ta.value = ''; ta.style.height = 'auto';
+    document.getElementById('send-btn').disabled = true;
+
+    const t0 = performance.now();
+
+    try {
+      const res = await fetch(API + '/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      const latency = Math.round(performance.now() - t0);
+
+      spinner.remove();
+
+      const srcRaw = data.source || 'UNKNOWN';
+      let srcKey = 'ERR', srcLabel = srcRaw;
+      if (srcRaw.startsWith('RAM'))  { srcKey = 'RAM'; srcLabel = '⚡ RAM Exact Hit'; }
+      if (srcRaw.startsWith('DB'))   { srcKey = 'DB';  srcLabel = '🔍 DB Semantic Hit'; }
+      if (srcRaw.startsWith('LLM'))  { srcKey = 'LLM'; srcLabel = '🤖 LLM Miss'; }
+
+      const card = document.createElement('div');
+      card.className = 'response-card';
+      card.innerHTML = `
+        <div class="response-meta">
+          <span class="source-badge ${srcKey}">${srcLabel}</span>
+          ${data.similarity_score ? `<span class="similarity">similarity: ${(data.similarity_score * 100).toFixed(1)}%</span>` : ''}
+          <span class="latency">${latency}ms</span>
+        </div>
+        <div class="response-text">${esc(data.response || JSON.stringify(data, null, 2))}</div>
+      `;
+      block.appendChild(card);
+
+      stats.total++;
+      if (srcKey === 'RAM') stats.ram++;
+      else if (srcKey === 'DB') stats.db++;
+      else if (srcKey === 'LLM') stats.llm++;
+      updateStats();
+
+    } catch (err) {
+      spinner.remove();
+      const card = document.createElement('div');
+      card.className = 'response-card';
+      card.innerHTML = `
+        <div class="response-meta"><span class="source-badge ERR">⛔ Error</span></div>
+        <div class="response-text">${esc(String(err))}\n\nMake sure uvicorn is running:\n  uvicorn main:app --reload</div>
+      `;
+      block.appendChild(card);
+    }
+
+    feed.scrollTop = feed.scrollHeight;
+    document.getElementById('send-btn').disabled = false;
+    ta.focus();
+  }
+
+  function updateStats() {
+    document.getElementById('s-total').textContent = stats.total;
+    document.getElementById('s-ram').textContent   = stats.ram;
+    document.getElementById('s-db').textContent    = stats.db;
+    document.getElementById('s-llm').textContent   = stats.llm;
+    const hits = stats.ram + stats.db;
+    const hitPct = stats.total ? Math.round((hits / stats.total) * 100) : 0;
+    const missPct = 100 - hitPct;
+    document.getElementById('hit-bar').style.width  = hitPct + '%';
+    document.getElementById('hit-pct').textContent  = hitPct + '% hits';
+    document.getElementById('miss-pct').textContent = missPct + '% misses';
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>

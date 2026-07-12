@@ -1,0 +1,19 @@
+# Core API
+fastapi==0.139.0
+uvicorn==0.50.2
+pydantic==2.13.4
+python-dotenv==1.2.2
+requests==2.34.2
+
+# Supabase
+supabase==2.31.0
+
+# ML / Embeddings
+sentence-transformers==5.6.0
+transformers==5.13.0
+torch==2.5.1+cu121
+numpy==2.5.1
+
+# Dataset Seeding (only needed to run seed_cache.py)
+datasets==5.0.0
+ijson==3.5.1

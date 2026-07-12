@@ -1,0 +1,601 @@
+id,pair_id,category,prompt
+1,176,trivia,Quick question — what is the most populous country in the world?
+2,128,business_email,Compose a professional email to politely decline a meeting invite.
+3,119,history,What are the major events of the colonization of the Americas?
+4,282,definition,Define machine learning.
+5,117,history,Tell me about the American Civil War.
+6,284,definition,Give me a clear definition of supply and demand.
+7,42,math,Can you multiply two 2x2 matrices for me?
+8,243,summarization,Can you give me a summary of the plot of The Lord of the Rings?
+9,64,recipe,"I want to cook apple pie tonight, what's the recipe?"
+10,3,science,Explain gravity like I'm five years old.
+11,298,fitness,Create a yoga routine for flexibility for a beginner.
+12,198,how_to,How do I back up a computer?
+13,100,finance,I need guidance on how to save for retirement.
+14,102,finance,What's the best strategy to improve a credit score?
+15,243,summarization,Summarize the plot of The Lord of the Rings.
+16,52,recipe,"I want to cook chocolate chip cookies tonight, what's the recipe?"
+17,289,definition,Can you explain what carbon footprint is?
+18,15,science,Explain the greenhouse effect like I'm five years old.
+19,209,grammar,When should I use each in lie versus lay?
+20,5,science,I don't understand plate tectonics — can you explain how it works?
+21,175,trivia,Can you tell me what the deepest point in the ocean is called?
+22,103,finance,I need guidance on how to file taxes as a freelancer.
+23,233,summarization,Can you condense the plot of Pride and Prejudice into a few sentences?
+24,176,trivia,"I'm curious, what's the most populous country in the world?"
+25,98,finance,What steps should I take to pay off credit card debt?
+26,296,fitness,What does a core workout for beginners look like?
+27,27,coding,Write a Python web scraper that extracts article titles from a page.
+28,18,science,Give me a simple explanation of how the brain stores memories.
+29,5,science,What is plate tectonics and how does it work?
+30,94,health,"I want to improve digestion, where do I start?"
+31,194,how_to,I need a guide on how to remove a wine stain from fabric.
+32,251,opinion,What's the best exercise routine for beginners and why?
+33,259,opinion,Can you recommend the best way to prepare for a job interview?
+34,61,recipe,"I want to cook margherita pizza tonight, what's the recipe?"
+35,70,travel,What are the best things to see in Rome?
+36,168,comparison,Compare a standing desk and a regular desk.
+37,223,translation,How do you say 'thank you very much' in Portuguese?
+38,82,health,Give me advice on how to improve sleep quality.
+39,85,health,"I want to lose weight sustainably, where do I start?"
+40,84,health,How can I reduce daily stress?
+41,102,finance,How do I improve a credit score?
+42,247,opinion,Can you recommend the best laptop for college students?
+43,202,grammar,Help me understand who versus whom.
+44,109,finance,Can you explain how to choose between renting and buying a home?
+45,186,how_to,How do I tie a tie?
+46,253,opinion,What would you suggest as the best budget smartphone right now?
+47,69,travel,Plan a 3-day itinerary for New York.
+48,183,trivia,What is the most spoken language in the world?
+49,264,tech_support,"Help, my printer won't print. What should I do?"
+50,75,travel,What should I do with 3 days in Bangkok?
+51,65,recipe,What ingredients and steps do I need for grilled salmon?
+52,90,health,How can I stay hydrated throughout the day?
+53,158,comparison,Help me decide between Netflix and Disney+.
+54,4,science,Explain DNA replication in simple terms.
+55,224,translation,"In Arabic, how would I say 'I would like to order some food'?"
+56,22,coding,"I need a Python function that checks if a number is prime, can you help?"
+57,256,opinion,Can you recommend the best way to start a small business?
+58,148,creative_writing,Write a poem about a time traveler stuck in the past.
+59,199,how_to,Teach me how to brew coffee at home.
+60,57,recipe,Give me a recipe for tomato soup.
+61,8,science,I don't understand how vaccines work — can you explain how it works?
+62,191,how_to,I need a guide on how to meditate as a beginner.
+63,161,comparison,Help me decide between Coke and Pepsi.
+64,10,science,Explain nuclear fission in simple terms.
+65,137,business_email,Can you draft a professional message to reschedule a meeting?
+66,131,business_email,Compose a professional email to resign from a job professionally.
+67,142,creative_writing,Write a poem about autumn leaves falling.
+68,283,definition,Can you explain what biodiversity is?
+69,201,grammar,What's the difference between affect versus effect?
+70,104,finance,Help me figure out how to understand stocks versus bonds.
+71,17,science,I don't understand how the internet works — can you explain how it works?
+72,158,comparison,What are the pros and cons of Netflix versus Disney+?
+73,161,comparison,What are the pros and cons of Coke versus Pepsi?
+74,115,history,What caused the Industrial Revolution?
+75,134,business_email,Can you draft a professional message to request feedback on a project?
+76,239,summarization,Provide a brief overview of the key takeaways from a leadership book.
+77,20,science,What is how earthquakes happen and how does it work?
+78,287,definition,What's the meaning of natural selection?
+79,129,business_email,Draft an email that helps me apologize to a client for a delay.
+80,71,travel,"I'm visiting Cape Town next month, any travel tips?"
+81,108,finance,How do I understand compound interest?
+82,115,history,What were the main causes behind the Industrial Revolution?
+83,145,creative_writing,Write a poem about a sailor lost at sea.
+84,121,history,What caused the fall of the Berlin Wall?
+85,199,how_to,What's the easiest way to brew coffee at home?
+86,35,coding,Show me how to write a script to merge two sorted lists.
+87,85,health,Give me advice on how to lose weight sustainably.
+88,46,math,I need help to convert 98.6 Fahrenheit to Celsius.
+89,182,trivia,Quick question — what is the tallest building in the world?
+90,12,science,Give me a simple explanation of magnetism.
+91,82,health,"I want to improve sleep quality, where do I start?"
+92,125,history,What are the major events of the history of the printing press?
+93,192,how_to,How do I learn a new language quickly?
+94,270,tech_support,"Help, I forgot my computer password. What should I do?"
+95,130,business_email,Help me write an email to ask my manager for a raise.
+96,253,opinion,Can you recommend the best budget smartphone right now?
+97,9,science,Give me a simple explanation of climate change.
+98,145,creative_writing,Compose a poem inspired by a sailor lost at sea.
+99,120,history,Tell me about the Silk Road.
+100,143,creative_writing,I'd like a piece of fiction about an AI that becomes self-aware.
+101,169,comparison,"Which is better, an electric bike or a regular bicycle?"
+102,106,finance,I need guidance on how to start investing with little money.
+103,259,opinion,What would you suggest as the best way to prepare for a job interview?
+104,271,tech_support,I'm having an issue: my webcam isn't working during calls.
+105,210,grammar,Can you explain semicolon usage?
+106,113,history,Summarize the key events of the fall of the Roman Empire.
+107,29,coding,How would I code a function that generates the Fibonacci sequence?
+108,261,tech_support,"Help, my laptop won't turn on. What should I do?"
+109,184,trivia,Tell me about the largest lake in the world.
+110,34,coding,Please provide a recursive factorial function in Python.
+111,22,coding,Please provide a Python function that checks if a number is prime.
+112,262,tech_support,I'm having an issue: my wifi keeps disconnecting.
+113,156,comparison,Compare iPhone and Android phones.
+114,81,health,What are some tips to lower cholesterol naturally?
+115,297,fitness,Can you design a workout plan for building an upper body for me?
+116,220,translation,How do you say 'thank you very much' in Italian?
+117,281,definition,Give me a clear definition of cryptocurrency.
+118,276,definition,What does inflation mean?
+119,206,grammar,When should I use each in the subjunctive mood?
+120,7,science,Explain quantum entanglement in simple terms.
+121,183,trivia,Do you know what the most spoken language in the world is?
+122,168,comparison,What are the differences between a standing desk and a regular desk?
+123,162,comparison,Compare Uber and Lyft.
+124,144,creative_writing,Can you write a short story involving a dragon guarding a village?
+125,76,travel,What are the best things to see in Barcelona?
+126,292,fitness,"I need a 30-minute HIIT workout, what would you suggest?"
+127,200,how_to,Give me step-by-step instructions to iron a dress shirt.
+128,298,fitness,"I need a yoga routine for flexibility, what would you suggest?"
+129,28,coding,Please provide a binary search algorithm in Python.
+130,140,business_email,Can you draft a professional message to ask a vendor for a discount?
+131,231,summarization,Can you give me a summary of the book Sapiens by Yuval Noah Harari?
+132,267,tech_support,"Help, my email isn't syncing. What should I do?"
+133,247,opinion,What would you suggest as the best laptop for college students?
+134,294,fitness,Can you design a stretching routine for tight hamstrings for me?
+135,105,finance,How do I save for a house down payment?
+136,91,health,Give me advice on how to reduce sugar intake.
+137,66,travel,What should I do with 3 days in Paris?
+138,215,grammar,When should I use each in i.e. versus e.g.?
+139,185,trivia,Quick question — what is the brightest star in the night sky?
+140,141,creative_writing,Write a short story about a haunted house.
+141,1,science,Explain photosynthesis in simple terms.
+142,86,health,Any recommendations to help me quit smoking for good?
+143,202,grammar,"I always confuse who versus whom, can you clarify?"
+144,112,history,What were the main causes behind World War II?
+145,84,health,What are some tips to reduce daily stress?
+146,157,comparison,"Which is better, Tesla or a gas-powered car?"
+147,217,translation,How do you say 'thank you very much' in French?
+148,216,translation,How do I say 'Where is the nearest train station?' in Spanish?
+149,60,recipe,Give me a recipe for beef tacos.
+150,255,opinion,What do you think is the best way to save money each month?
+151,164,comparison,What are the pros and cons of a Kindle versus a paperback book?
+152,48,math,Please find the least common multiple of 12 and 18.
+153,139,business_email,I need to respond to a customer complaint — can you write the email?
+154,99,finance,What's the best strategy to create a monthly budget?
+155,121,history,What were the main causes behind the fall of the Berlin Wall?
+156,140,business_email,Compose a professional email to ask a vendor for a discount.
+157,110,finance,Help me figure out how to set financial goals for the year.
+158,181,trivia,Can you tell me what the largest mammal on Earth is called?
+159,56,recipe,Teach me how to prepare guacamole from scratch.
+160,167,comparison,Help me decide between Spotify and Apple Music.
+161,150,creative_writing,Can you write a short story involving a robot learning to feel emotions?
+162,44,math,Walk me through how to calculate a 20% discount on a $150 item.
+163,10,science,Can you break down nuclear fission so a beginner can understand it?
+164,297,fitness,Give me a workout plan for building an upper body.
+165,238,summarization,What are the key points of a news article about renewable energy trends?
+166,186,how_to,Can you show me how to tie a tie?
+167,180,trivia,What is the coldest place on Earth?
+168,100,finance,Can you explain how to save for retirement?
+169,137,business_email,Compose a professional email to reschedule a meeting.
+170,192,how_to,Can you show me how to learn a new language quickly?
+171,141,creative_writing,Can you write a short story involving a haunted house?
+172,290,definition,Give me a clear definition of cybersecurity.
+173,43,math,Show your work to solve the system of equations 2x + y = 10 and x - y = 2.
+174,154,creative_writing,Compose a poem inspired by a child who can talk to animals.
+175,226,translation,How do you say 'thank you very much' in Hindi?
+176,26,coding,How would I code a regex pattern that validates email addresses?
+177,288,definition,Define cloud computing.
+178,83,health,Any recommendations to help me build muscle as a beginner?
+179,9,science,Explain climate change like I'm five years old.
+180,49,math,I need help to calculate the volume of a cylinder with radius 3 and height 10.
+181,257,opinion,Which one would you say is the best productivity apps for work?
+182,200,how_to,I need a guide on how to iron a dress shirt.
+183,266,tech_support,Can you help me troubleshoot why I can't connect to Bluetooth headphones?
+184,118,history,What caused the Renaissance?
+185,214,grammar,"I always confuse compliment versus complement, can you clarify?"
+186,62,recipe,Teach me how to prepare beef stew from scratch.
+187,166,comparison,Should I choose PlayStation or Xbox?
+188,227,translation,Translate 'I would like to order some food' into Dutch.
+189,187,how_to,What's the easiest way to change a car tire?
+190,170,comparison,Help me decide between Google Docs and Microsoft Word.
+191,299,fitness,What does a workout to improve cardio endurance look like?
+192,86,health,What's the best way to quit smoking for good?
+193,213,grammar,Can you explain further versus farther?
+194,138,business_email,Draft an email that helps me onboard a new client.
+195,24,coding,Write a JavaScript debounce function.
+196,154,creative_writing,Write a poem about a child who can talk to animals.
+197,256,opinion,What would you suggest as the best way to start a small business?
+198,70,travel,Give me top attractions to visit in Rome.
+199,47,math,"How do I calculate the standard deviation of 2, 4, 4, 4, 5, 5, 7, 9?"
+200,273,tech_support,"Help, my browser keeps showing pop-up ads. What should I do?"
+201,282,definition,What does machine learning mean?
+202,207,grammar,Can you explain less versus fewer?
+203,278,definition,What's the meaning of artificial intelligence?
+204,39,math,Can you convert 100 kilometers to miles for me?
+205,59,recipe,Teach me how to prepare sushi rolls from scratch.
+206,165,comparison,Compare a gym membership and working out at home.
+207,155,creative_writing,Give me a creative writing piece about an astronaut stranded on Mars.
+208,252,opinion,What do you think is the best way to learn to code?
+209,225,translation,Translate 'Where is the nearest train station?' into Korean.
+210,39,math,Please convert 100 kilometers to miles.
+211,131,business_email,Can you draft a professional message to resign from a job professionally?
+212,269,tech_support,Can you help me troubleshoot why my screen is frozen?
+213,160,comparison,"Which is better, AirPods or Sony headphones?"
+214,246,opinion,What do you think is the best programming language to learn first?
+215,193,how_to,What's the easiest way to plant a vegetable garden?
+216,208,grammar,Help me understand proper apostrophe use.
+217,223,translation,What's the Portuguese translation of 'thank you very much'?
+218,105,finance,What's the best strategy to save for a house down payment?
+219,236,summarization,Provide a brief overview of the main points of a quarterly business report.
+220,3,science,Give me a simple explanation of gravity.
+221,25,coding,"I need a SQL query that finds the top 5 customers by total spend, can you help?"
+222,219,translation,Translate 'Where is the nearest train station?' into Japanese.
+223,248,opinion,What's the best books for beginners in philosophy and why?
+224,237,summarization,Summarize the plot of The Great Gatsby.
+225,162,comparison,What are the differences between Uber and Lyft?
+226,232,summarization,What are the key points of the novel 1984 by George Orwell?
+227,48,math,Can you find the least common multiple of 12 and 18 for me?
+228,215,grammar,Explain the rule for i.e. versus e.g..
+229,74,travel,"I'm visiting Marrakech next month, any travel tips?"
+230,23,coding,How would I code a Python script that reads a CSV file and prints each row?
+231,96,finance,What's the best strategy to build an emergency fund?
+232,250,opinion,Can you recommend the best diet for sustainable weight loss?
+233,95,health,What's the best way to recover faster after a workout?
+234,240,summarization,Summarize the plot of Romeo and Juliet.
+235,14,science,What is the human immune system and how does it work?
+236,244,summarization,Give me the main takeaways from an article about artificial intelligence ethics.
+237,47,math,"Walk me through how to calculate the standard deviation of 2, 4, 4, 4, 5, 5, 7, 9."
+238,50,math,How do I solve for x in 3x + 7 = 22?
+239,245,summarization,Provide a brief overview of the main events of a long meeting transcript.
+240,88,health,"I want to boost the immune system, where do I start?"
+241,23,coding,Show me how to write a Python script that reads a CSV file and prints each row.
+242,58,recipe,"I want to cook pancakes tonight, what's the recipe?"
+243,159,comparison,Compare a MacBook and a Windows laptop.
+244,204,grammar,Can you explain correct comma usage?
+245,66,travel,Plan a 3-day itinerary for Paris.
+246,11,science,I don't understand the water cycle — can you explain how it works?
+247,277,definition,"I keep hearing about blockchain, what is it?"
+248,45,math,"Please find the mean and median of the numbers 4, 8, 15, 16, 23, 42."
+249,87,health,How can I improve posture while working at a desk?
+250,179,trivia,Quick question — what is the largest desert in the world?
+251,262,tech_support,Problem: my wifi keeps disconnecting. Any troubleshooting steps?
+252,151,creative_writing,Compose a poem inspired by a lonely lighthouse keeper.
+253,57,recipe,How do I make tomato soup?
+254,46,math,Show your work to convert 98.6 Fahrenheit to Celsius.
+255,109,finance,I need guidance on how to choose between renting and buying a home.
+256,230,translation,Translate 'I would like to order some food' into Turkish.
+257,63,recipe,Give me a recipe for lentil soup.
+258,175,trivia,Tell me about the deepest point in the ocean.
+259,142,creative_writing,Compose a poem inspired by autumn leaves falling.
+260,151,creative_writing,Write a poem about a lonely lighthouse keeper.
+261,190,how_to,Teach me how to write a strong resume.
+262,270,tech_support,I forgot my computer password — how do I fix this?
+263,29,coding,Show me how to write a function that generates the Fibonacci sequence.
+264,228,translation,How do I say 'Where is the nearest train station?' in Swedish?
+265,234,summarization,Can you give me a summary of a research paper on climate change impacts?
+266,77,travel,"I'm visiting Lisbon next month, any travel tips?"
+267,150,creative_writing,Write a short story about a robot learning to feel emotions.
+268,239,summarization,Can you condense the key takeaways from a leadership book into a few sentences?
+269,32,coding,How would I code a Python class for a simple bank account?
+270,232,summarization,Give me the main takeaways from the novel 1984 by George Orwell.
+271,7,science,Can you break down quantum entanglement so a beginner can understand it?
+272,19,science,Explain why the sky is blue in simple terms.
+273,81,health,How can I lower cholesterol naturally?
+274,12,science,Explain magnetism like I'm five years old.
+275,229,translation,How do you say 'thank you very much' in Greek?
+276,265,tech_support,I'm having an issue: my computer is running very slowly.
+277,96,finance,How do I build an emergency fund?
+278,148,creative_writing,Compose a poem inspired by a time traveler stuck in the past.
+279,254,opinion,What's the best pet for someone in a small apartment and why?
+280,277,definition,Can you explain what blockchain is?
+281,174,trivia,Do you know what the fastest land animal is?
+282,244,summarization,What are the key points of an article about artificial intelligence ethics?
+283,193,how_to,Teach me how to plant a vegetable garden.
+284,49,math,Show your work to calculate the volume of a cylinder with radius 3 and height 10.
+285,101,finance,Help me figure out how to understand how mortgages work.
+286,36,math,Please solve the quadratic equation x^2 - 5x + 6 = 0.
+287,44,math,How do I calculate a 20% discount on a $150 item?
+288,195,how_to,Can you show me how to fold a fitted sheet?
+289,185,trivia,"I'm curious, what's the brightest star in the night sky?"
+290,208,grammar,"I always confuse proper apostrophe use, can you clarify?"
+291,263,tech_support,What could be causing this: my phone battery drains too fast?
+292,203,grammar,When should I use each in passive versus active voice?
+293,116,history,Summarize the key events of ancient Egypt.
+294,235,summarization,Give me the main takeaways from the movie Inception.
+295,152,creative_writing,Give me a creative writing piece about a city built in the clouds.
+296,79,travel,Give me top attractions to visit in Dubai.
+297,225,translation,How do I say 'Where is the nearest train station?' in Korean?
+298,8,science,What is how vaccines work and how does it work?
+299,67,travel,What are the best things to see in Tokyo?
+300,112,history,What caused World War II?
+301,214,grammar,Help me understand compliment versus complement.
+302,24,coding,Can you write me a JavaScript debounce function?
+303,233,summarization,Provide a brief overview of the plot of Pride and Prejudice.
+304,260,opinion,What's the best hobbies to pick up as an adult and why?
+305,67,travel,Give me top attractions to visit in Tokyo.
+306,97,finance,Can you explain how to invest in index funds?
+307,135,business_email,Draft an email that helps me thank a client for their business.
+308,255,opinion,"In your opinion, what's the best way to save money each month?"
+309,79,travel,What are the best things to see in Dubai?
+310,294,fitness,Give me a stretching routine for tight hamstrings.
+311,77,travel,What should I know before traveling to Lisbon?
+312,128,business_email,Can you draft a professional message to politely decline a meeting invite?
+313,152,creative_writing,I'd like a piece of fiction about a city built in the clouds.
+314,147,creative_writing,Write a short story about a detective solving a locked-room mystery.
+315,218,translation,Translate 'I would like to order some food' into German.
+316,53,recipe,Teach me how to prepare chicken curry from scratch.
+317,157,comparison,Should I choose Tesla or a gas-powered car?
+318,6,science,Explain evolution by natural selection like I'm five years old.
+319,213,grammar,What's the difference between further versus farther?
+320,97,finance,I need guidance on how to invest in index funds.
+321,78,travel,Plan a 3-day itinerary for Kyoto.
+322,163,comparison,Should I choose Instagram or TikTok?
+323,271,tech_support,Problem: my webcam isn't working during calls. Any troubleshooting steps?
+324,17,science,What is how the internet works and how does it work?
+325,13,science,Explain how electricity flows through a circuit in simple terms.
+326,254,opinion,Which one would you say is the best pet for someone in a small apartment?
+327,189,how_to,How do I start a compost bin?
+328,258,opinion,What do you think is the best streaming service for movies?
+329,221,translation,Translate 'I would like to order some food' into Mandarin Chinese.
+330,284,definition,What's the meaning of supply and demand?
+331,227,translation,"In Dutch, how would I say 'I would like to order some food'?"
+332,103,finance,Can you explain how to file taxes as a freelancer?
+333,35,coding,How would I code a script to merge two sorted lists?
+334,222,translation,How do I say 'Where is the nearest train station?' in Russian?
+335,80,travel,What should I know before traveling to Prague?
+336,43,math,I need help to solve the system of equations 2x + y = 10 and x - y = 2.
+337,106,finance,Can you explain how to start investing with little money?
+338,180,trivia,Do you know what the coldest place on Earth is?
+339,177,trivia,What is the smallest country in the world?
+340,245,summarization,Can you condense the main events of a long meeting transcript into a few sentences?
+341,74,travel,What should I know before traveling to Marrakech?
+342,263,tech_support,Can you help me troubleshoot why my phone battery drains too fast?
+343,172,trivia,Can you tell me what the longest river in the world is called?
+344,295,fitness,"I need a running plan for a first 5K, what would you suggest?"
+345,125,history,Summarize the key events of the history of the printing press.
+346,246,opinion,"In your opinion, what's the best programming language to learn first?"
+347,89,health,Any recommendations to help me manage type 2 diabetes?
+348,72,travel,What should I do with 3 days in Sydney?
+349,219,translation,How do I say 'Where is the nearest train station?' in Japanese?
+350,34,coding,"I need a recursive factorial function in Python, can you help?"
+351,268,tech_support,I'm having an issue: my app keeps crashing.
+352,177,trivia,Do you know what the smallest country in the world is?
+353,237,summarization,Can you give me a summary of the plot of The Great Gatsby?
+354,276,definition,Define inflation.
+355,19,science,Can you break down why the sky is blue so a beginner can understand it?
+356,65,recipe,Teach me how to prepare grilled salmon from scratch.
+357,281,definition,What's the meaning of cryptocurrency?
+358,146,creative_writing,I'd like a piece of fiction about the ocean at midnight.
+359,212,grammar,When should I use each in who's versus whose?
+360,42,math,Please multiply two 2x2 matrices.
+361,101,finance,What steps should I take to understand how mortgages work?
+362,30,coding,Can you write me a Python function that removes duplicates from a list?
+363,190,how_to,What's the easiest way to write a strong resume?
+364,122,history,What are the major events of the Great Depression?
+365,133,business_email,Help me write an email to invite a colleague to a conference.
+366,33,coding,Can you write me a function to sort a list of dictionaries by a key?
+367,147,creative_writing,Can you write a short story involving a detective solving a locked-room mystery?
+368,54,recipe,Give me a recipe for vegetable stir fry.
+369,40,math,I need help to find the probability of rolling a 6 on a fair die twice in a row.
+370,216,translation,Translate 'Where is the nearest train station?' into Spanish.
+371,94,health,Give me advice on how to improve digestion.
+372,99,finance,How do I create a monthly budget?
+373,149,creative_writing,Give me a creative writing piece about a fairy tale with an unexpected twist.
+374,220,translation,What's the Italian translation of 'thank you very much'?
+375,291,fitness,Give me a beginner home workout with no equipment.
+376,261,tech_support,my laptop won't turn on — how do I fix this?
+377,178,trivia,Can you tell me what the oldest known civilization is called?
+378,300,fitness,Can you design a beginner weightlifting program for me?
+379,52,recipe,Can you share a recipe for chocolate chip cookies?
+380,173,trivia,Quick question — what is the largest planet in our solar system?
+381,63,recipe,How do I make lentil soup?
+382,279,definition,What does photosynthesis mean?
+383,159,comparison,What are the differences between a MacBook and a Windows laptop?
+384,153,creative_writing,Write a short story about a war between two kingdoms.
+385,224,translation,Translate 'I would like to order some food' into Arabic.
+386,205,grammar,"I always confuse its versus it's, can you clarify?"
+387,55,recipe,"I want to cook banana bread tonight, what's the recipe?"
+388,155,creative_writing,I'd like a piece of fiction about an astronaut stranded on Mars.
+389,126,business_email,Write an email to request a deadline extension.
+390,280,definition,Can you explain what democracy is?
+391,126,business_email,Draft an email that helps me request a deadline extension.
+392,26,coding,Show me how to write a regex pattern that validates email addresses.
+393,197,how_to,Give me step-by-step instructions to paint a room like a pro.
+394,274,tech_support,I'm having an issue: my speakers have no sound.
+395,2,science,What is black holes and how does it work?
+396,278,definition,Give me a clear definition of artificial intelligence.
+397,20,science,I don't understand how earthquakes happen — can you explain how it works?
+398,265,tech_support,Problem: my computer is running very slowly. Any troubleshooting steps?
+399,203,grammar,Explain the rule for passive versus active voice.
+400,163,comparison,"Which is better, Instagram or TikTok?"
+401,51,recipe,How do I make pasta carbonara?
+402,286,definition,Can you explain what gross domestic product is?
+403,267,tech_support,my email isn't syncing — how do I fix this?
+404,1,science,Can you break down photosynthesis so a beginner can understand it?
+405,33,coding,Write a function to sort a list of dictionaries by a key.
+406,257,opinion,What's the best productivity apps for work and why?
+407,55,recipe,Can you share a recipe for banana bread?
+408,133,business_email,I need to invite a colleague to a conference — can you write the email?
+409,36,math,Can you solve the quadratic equation x^2 - 5x + 6 = 0 for me?
+410,196,how_to,Teach me how to unclog a drain.
+411,296,fitness,Lay out a core workout for beginners for me.
+412,210,grammar,What's the difference between semicolon usage?
+413,120,history,Can you give me an overview of the Silk Road?
+414,25,coding,Please provide a SQL query that finds the top 5 customers by total spend.
+415,18,science,Explain how the brain stores memories like I'm five years old.
+416,258,opinion,"In your opinion, what's the best streaming service for movies?"
+417,249,opinion,"In your opinion, what's the best cities to live in for young professionals?"
+418,160,comparison,Should I choose AirPods or Sony headphones?
+419,119,history,Summarize the key events of the colonization of the Americas.
+420,293,fitness,What does a weekly gym routine for building strength look like?
+421,290,definition,What's the meaning of cybersecurity?
+422,181,trivia,Tell me about the largest mammal on Earth.
+423,285,definition,What does renewable energy mean?
+424,15,science,Give me a simple explanation of the greenhouse effect.
+425,264,tech_support,my printer won't print — how do I fix this?
+426,178,trivia,Tell me about the oldest known civilization.
+427,132,business_email,Write an email to welcome a new employee to the team.
+428,197,how_to,I need a guide on how to paint a room like a pro.
+429,272,tech_support,What could be causing this: my external hard drive isn't detected?
+430,194,how_to,Give me step-by-step instructions to remove a wine stain from fabric.
+431,229,translation,What's the Greek translation of 'thank you very much'?
+432,238,summarization,Give me the main takeaways from a news article about renewable energy trends.
+433,58,recipe,Can you share a recipe for pancakes?
+434,90,health,What are some tips to stay hydrated throughout the day?
+435,191,how_to,Give me step-by-step instructions to meditate as a beginner.
+436,195,how_to,How do I fold a fitted sheet?
+437,116,history,What are the major events of ancient Egypt?
+438,211,grammar,Help me understand than versus then.
+439,170,comparison,What are the pros and cons of Google Docs versus Microsoft Word?
+440,172,trivia,Tell me about the longest river in the world.
+441,206,grammar,Explain the rule for the subjunctive mood.
+442,285,definition,Define renewable energy.
+443,38,math,Walk me through how to find the derivative of f(x) = 3x^2 + 2x - 1.
+444,136,business_email,I need to announce a product launch — can you write the email?
+445,171,trivia,What is the tallest mountain in the world?
+446,289,definition,"I keep hearing about carbon footprint, what is it?"
+447,252,opinion,"In your opinion, what's the best way to learn to code?"
+448,37,math,Show your work to calculate compound interest on $5000 at 4% for 3 years.
+449,76,travel,Give me top attractions to visit in Barcelona.
+450,64,recipe,Can you share a recipe for apple pie?
+451,11,science,What is the water cycle and how does it work?
+452,274,tech_support,Problem: my speakers have no sound. Any troubleshooting steps?
+453,40,math,Show your work to find the probability of rolling a 6 on a fair die twice in a row.
+454,187,how_to,Teach me how to change a car tire.
+455,149,creative_writing,I'd like a piece of fiction about a fairy tale with an unexpected twist.
+456,73,travel,What are the best things to see in Reykjavik?
+457,196,how_to,What's the easiest way to unclog a drain?
+458,222,translation,Translate 'Where is the nearest train station?' into Russian.
+459,272,tech_support,Can you help me troubleshoot why my external hard drive isn't detected?
+460,127,business_email,Help me write an email to follow up after a job interview.
+461,234,summarization,Summarize a research paper on climate change impacts.
+462,204,grammar,What's the difference between correct comma usage?
+463,69,travel,What should I do with 3 days in New York?
+464,41,math,How do I calculate the area of a circle with radius 7?
+465,93,health,What are some tips to strengthen the lower back?
+466,205,grammar,Help me understand its versus it's.
+467,114,history,Tell me about the Cold War.
+468,235,summarization,What are the key points of the movie Inception?
+469,75,travel,Plan a 3-day itinerary for Bangkok.
+470,242,summarization,Can you condense a documentary about deep sea creatures into a few sentences?
+471,293,fitness,Lay out a weekly gym routine for building strength for me.
+472,260,opinion,Which one would you say is the best hobbies to pick up as an adult?
+473,78,travel,What should I do with 3 days in Kyoto?
+474,122,history,Summarize the key events of the Great Depression.
+475,135,business_email,Write an email to thank a client for their business.
+476,89,health,What's the best way to manage type 2 diabetes?
+477,13,science,Can you break down how electricity flows through a circuit so a beginner can understand it?
+478,188,how_to,Give me step-by-step instructions to set up a wifi router.
+479,62,recipe,What ingredients and steps do I need for beef stew?
+480,156,comparison,What are the differences between iPhone and Android phones?
+481,53,recipe,What ingredients and steps do I need for chicken curry?
+482,236,summarization,Can you condense the main points of a quarterly business report into a few sentences?
+483,31,coding,"I need a JavaScript function that fetches data from an API, can you help?"
+484,139,business_email,Help me write an email to respond to a customer complaint.
+485,300,fitness,Give me a beginner weightlifting program.
+486,68,travel,"I'm visiting Bali next month, any travel tips?"
+487,123,history,Can you give me an overview of the Byzantine Empire?
+488,228,translation,Translate 'Where is the nearest train station?' into Swedish.
+489,179,trivia,"I'm curious, what's the largest desert in the world?"
+490,27,coding,Can you write me a Python web scraper that extracts article titles from a page?
+491,123,history,Tell me about the Byzantine Empire.
+492,299,fitness,Lay out a workout to improve cardio endurance for me.
+493,292,fitness,Create a 30-minute HIIT workout for a beginner.
+494,240,summarization,Can you give me a summary of the plot of Romeo and Juliet?
+495,98,finance,Help me figure out how to pay off credit card debt.
+496,226,translation,What's the Hindi translation of 'thank you very much'?
+497,91,health,"I want to reduce sugar intake, where do I start?"
+498,136,business_email,Help me write an email to announce a product launch.
+499,107,finance,Help me figure out how to reduce monthly expenses.
+500,6,science,Give me a simple explanation of evolution by natural selection.
+501,21,coding,Write a Python function that reverses a string.
+502,104,finance,What steps should I take to understand stocks versus bonds?
+503,184,trivia,Can you tell me what the largest lake in the world is called?
+504,241,summarization,"Give me the main takeaways from the main ideas in Thinking, Fast and Slow."
+505,80,travel,"I'm visiting Prague next month, any travel tips?"
+506,87,health,What are some tips to improve posture while working at a desk?
+507,217,translation,What's the French translation of 'thank you very much'?
+508,174,trivia,What is the fastest land animal?
+509,249,opinion,What do you think is the best cities to live in for young professionals?
+510,130,business_email,I need to ask my manager for a raise — can you write the email?
+511,273,tech_support,my browser keeps showing pop-up ads — how do I fix this?
+512,37,math,I need help to calculate compound interest on $5000 at 4% for 3 years.
+513,113,history,What are the major events of the fall of the Roman Empire?
+514,138,business_email,Write an email to onboard a new client.
+515,117,history,Can you give me an overview of the American Civil War?
+516,188,how_to,I need a guide on how to set up a wifi router.
+517,218,translation,"In German, how would I say 'I would like to order some food'?"
+518,72,travel,Plan a 3-day itinerary for Sydney.
+519,241,summarization,"What are the key points of the main ideas in Thinking, Fast and Slow?"
+520,51,recipe,Give me a recipe for pasta carbonara.
+521,31,coding,Please provide a JavaScript function that fetches data from an API.
+522,295,fitness,Create a running plan for a first 5K for a beginner.
+523,280,definition,"I keep hearing about democracy, what is it?"
+524,93,health,How can I strengthen the lower back?
+525,201,grammar,Can you explain affect versus effect?
+526,2,science,I don't understand black holes — can you explain how it works?
+527,59,recipe,What ingredients and steps do I need for sushi rolls?
+528,114,history,Can you give me an overview of the Cold War?
+529,50,math,Walk me through how to solve for x in 3x + 7 = 22.
+530,173,trivia,"I'm curious, what's the largest planet in our solar system?"
+531,275,tech_support,What could be causing this: my keyboard keys aren't responding?
+532,171,trivia,Do you know what the tallest mountain in the world is?
+533,71,travel,What should I know before traveling to Cape Town?
+534,41,math,Walk me through how to calculate the area of a circle with radius 7.
+535,21,coding,Can you write me a Python function that reverses a string?
+536,279,definition,Define photosynthesis.
+537,242,summarization,Provide a brief overview of a documentary about deep sea creatures.
+538,275,tech_support,Can you help me troubleshoot why my keyboard keys aren't responding?
+539,266,tech_support,What could be causing this: I can't connect to Bluetooth headphones?
+540,88,health,Give me advice on how to boost the immune system.
+541,288,definition,What does cloud computing mean?
+542,286,definition,"I keep hearing about gross domestic product, what is it?"
+543,92,health,What's the best way to increase daily energy levels?
+544,16,science,Can you break down how the human eye sees color so a beginner can understand it?
+545,124,history,What were the main causes behind the Space Race?
+546,68,travel,What should I know before traveling to Bali?
+547,4,science,Can you break down DNA replication so a beginner can understand it?
+548,212,grammar,Explain the rule for who's versus whose.
+549,164,comparison,Help me decide between a Kindle and a paperback book.
+550,209,grammar,Explain the rule for lie versus lay.
+551,107,finance,What steps should I take to reduce monthly expenses?
+552,207,grammar,What's the difference between less versus fewer?
+553,231,summarization,Summarize the book Sapiens by Yuval Noah Harari.
+554,111,history,Can you give me an overview of the French Revolution?
+555,32,coding,Show me how to write a Python class for a simple bank account.
+556,221,translation,"In Mandarin Chinese, how would I say 'I would like to order some food'?"
+557,30,coding,Write a Python function that removes duplicates from a list.
+558,165,comparison,What are the differences between a gym membership and working out at home?
+559,144,creative_writing,Write a short story about a dragon guarding a village.
+560,127,business_email,I need to follow up after a job interview — can you write the email?
+561,291,fitness,Can you design a beginner home workout with no equipment for me?
+562,283,definition,"I keep hearing about biodiversity, what is it?"
+563,73,travel,Give me top attractions to visit in Reykjavik.
+564,38,math,How do I find the derivative of f(x) = 3x^2 + 2x - 1?
+565,45,math,"Can you find the mean and median of the numbers 4, 8, 15, 16, 23, 42 for me?"
+566,169,comparison,Should I choose an electric bike or a regular bicycle?
+567,95,health,Any recommendations to help me recover faster after a workout?
+568,230,translation,"In Turkish, how would I say 'I would like to order some food'?"
+569,182,trivia,"I'm curious, what's the tallest building in the world?"
+570,118,history,What were the main causes behind the Renaissance?
+571,134,business_email,Compose a professional email to request feedback on a project.
+572,198,how_to,Can you show me how to back up a computer?
+573,60,recipe,How do I make beef tacos?
+574,14,science,I don't understand the human immune system — can you explain how it works?
+575,132,business_email,Draft an email that helps me welcome a new employee to the team.
+576,83,health,What's the best way to build muscle as a beginner?
+577,110,finance,What steps should I take to set financial goals for the year?
+578,28,coding,"I need a binary search algorithm in Python, can you help?"
+579,251,opinion,Which one would you say is the best exercise routine for beginners?
+580,129,business_email,Write an email to apologize to a client for a delay.
+581,166,comparison,"Which is better, PlayStation or Xbox?"
+582,54,recipe,How do I make vegetable stir fry?
+583,16,science,Explain how the human eye sees color in simple terms.
+584,189,how_to,Can you show me how to start a compost bin?
+585,250,opinion,What would you suggest as the best diet for sustainable weight loss?
+586,167,comparison,What are the pros and cons of Spotify versus Apple Music?
+587,124,history,What caused the Space Race?
+588,268,tech_support,Problem: my app keeps crashing. Any troubleshooting steps?
+589,92,health,Any recommendations to help me increase daily energy levels?
+590,146,creative_writing,Give me a creative writing piece about the ocean at midnight.
+591,143,creative_writing,Give me a creative writing piece about an AI that becomes self-aware.
+592,287,definition,Give me a clear definition of natural selection.
+593,269,tech_support,What could be causing this: my screen is frozen?
+594,211,grammar,"I always confuse than versus then, can you clarify?"
+595,61,recipe,Can you share a recipe for margherita pizza?
+596,111,history,Tell me about the French Revolution.
+597,56,recipe,What ingredients and steps do I need for guacamole?
+598,108,finance,What's the best strategy to understand compound interest?
+599,153,creative_writing,Can you write a short story involving a war between two kingdoms?
+600,248,opinion,Which one would you say is the best books for beginners in philosophy?

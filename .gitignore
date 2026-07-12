@@ -1,0 +1,43 @@
+# ============================================================
+# AXIOM Semantic Cache — .gitignore
+# ============================================================
+
+# --- Secrets & Environment ---
+.env
+
+# --- Python ---
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# --- Datasets (large local files, not needed in repo) ---
+openhermes_data/
+dolly_data/
+wizard_data/
+flan_data/
+sharegpt_data/
+
+# --- Seeding State ---
+checkpoints/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb
+
+# --- Test & Scratch Outputs ---
+output.csv
+test.csv
+*.log
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- IDE ---
+.vscode/
+.idea/
