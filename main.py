@@ -1,6 +1,7 @@
 import os
 import requests
-from sentence_transformers import SentenceTransformer
+import math
+from sentence_transformers import SentenceTransformer, CrossEncoder
 import torch
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -33,11 +34,15 @@ else:
 print(f"Loading Embedding Model on {device.upper()}...")
 embedding_model = SentenceTransformer('all-mpnet-base-v2', device=device)
 
+print("Loading Cross-Encoder Reranker on CPU (saving GPU VRAM)...")
+reranker_model = CrossEncoder('BAAI/bge-reranker-base', device='cpu')
+
 # In-Memory Exact Match Cache
 # Key: Query String -> Value: Response String
 ram_cache = {}
 RAM_LIMIT            = 10000
 SIMILARITY_THRESHOLD = 0.85
+RERANKER_THRESHOLD   = 0.70
 
 # Classifier service — runs separately on port 8001
 CLASSIFIER_URL = "http://127.0.0.1:8001/classify"
@@ -85,6 +90,11 @@ def classify_query(query: str) -> dict:
         print(f"[CLASSIFIER] Unreachable: {e} — defaulting to PERSONAL (DB skipped)")
         return {"label": "PERSONAL", "decision_layer": "UNAVAILABLE", "heuristic_reason": None}
 
+# --- Health Check Endpoint ---
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "cache_api", "device": device}
+
 # --- Core Routing Engine ---
 @app.post("/query")
 async def process_query(request: QueryRequest):
@@ -120,28 +130,38 @@ async def process_query(request: QueryRequest):
         ).execute()
         
         if db_search.data:
-            matched_row    = db_search.data[0]
+            matched_row     = db_search.data[0]
+            matched_query   = matched_row["query_text"]
             cached_response = matched_row["response_text"]
             similarity      = round(matched_row["similarity"], 4)
 
-            # Backfill RAM for next time
-            update_ram_cache(user_prompt, cached_response)
-            print(f"[DB HIT]   '{user_prompt[:50]}' (similarity: {similarity})")
+            # Tier 2b: Cross-Encoder Reranker Verification
+            raw_logit = reranker_model.predict([user_prompt, matched_query])
+            reranker_score = round(1 / (1 + math.exp(-float(raw_logit))), 4)
 
-            return {
-                "status":   "success",
-                "source":   "DB_Semantic_Hit",
-                "response": cached_response,
-                "debug": {
-                    "tier":               "DB",
-                    "cached":             True,
-                    "similarity_score":   similarity,
-                    "classifier_called":  False,
-                    "classifier_note":    "Classifier not called on cache hits",
+            if reranker_score >= RERANKER_THRESHOLD:
+                # Backfill RAM for next time
+                update_ram_cache(user_prompt, cached_response)
+                print(f"[DB HIT]   '{user_prompt[:50]}' (similarity: {similarity}, reranker: {reranker_score})")
+
+                return {
+                    "status":   "success",
+                    "source":   "DB_Semantic_Hit",
+                    "response": cached_response,
+                    "debug": {
+                        "tier":               "DB",
+                        "cached":             True,
+                        "similarity_score":   similarity,
+                        "reranker_score":     reranker_score,
+                        "reranker_model":     "BAAI/bge-reranker-base",
+                        "classifier_called":  False,
+                        "classifier_note":    "Classifier not called on cache hits",
+                    }
                 }
-            }
+            else:
+                print(f"[CACHE REJECT] '{user_prompt[:45]}' matched DB '{matched_query[:45]}' (similarity: {similarity}) but rejected by reranker ({reranker_score} < {RERANKER_THRESHOLD})")
     except Exception as e:
-        print(f"Vector search failed: {e}")
+        print(f"Vector/Reranker search failed: {e}")
 
     # 4. Cache Miss: Generate fresh response
     fresh_response = generate_llm_response(user_prompt)

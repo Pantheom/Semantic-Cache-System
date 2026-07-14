@@ -39,7 +39,7 @@ def pct(val, total):
 
 def check_server():
     try:
-        r = requests.get("http://127.0.0.1:8000/docs", timeout=3)
+        r = requests.get("http://127.0.0.1:8000/health", timeout=3)
         return r.status_code == 200
     except Exception:
         return False
