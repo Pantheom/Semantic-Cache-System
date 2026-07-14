@@ -41,3 +41,5 @@ Thumbs.db
 # --- IDE ---
 .vscode/
 .idea/
+
+test_ranker.py
