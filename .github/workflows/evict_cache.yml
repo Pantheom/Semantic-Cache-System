@@ -1,0 +1,104 @@
+name: LFU Cache Eviction
+
+# =============================================================================
+# AXIOM Semantic Cache — Scheduled LFU Eviction
+# =============================================================================
+# Triggers the evict_lfu_cache() stored procedure in Supabase via HTTP RPC.
+# All eviction logic lives inside the database — this workflow only calls it.
+#
+# Schedules:
+#   - Automatic: every 2 days at 02:00 UTC
+#   - Manual:    "Run workflow" button in GitHub Actions UI
+#
+# Required Secrets (Settings → Secrets → Actions):
+#   SUPABASE_URL         — https://your-project-id.supabase.co
+#   SUPABASE_SERVICE_KEY — service_role key (NOT the anon key)
+#                          Found in: Supabase → Settings → API → Service Role
+# =============================================================================
+
+on:
+  schedule:
+    - cron: '0 2 */2 * *'   # Every 2 days at 02:00 UTC
+  workflow_dispatch:          # Manual trigger from GitHub Actions UI
+    inputs:
+      max_rows:
+        description: 'Hard row cap (default: 50000)'
+        required: false
+        default: '50000'
+      threshold_pct:
+        description: 'Eviction trigger threshold, 0–1 (default: 0.80 = 80%)'
+        required: false
+        default: '0.80'
+      target_pct:
+        description: 'Prune-to target, 0–1 (default: 0.70 = 70%)'
+        required: false
+        default: '0.70'
+
+jobs:
+  evict:
+    name: Run LFU Cache Eviction
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set eviction parameters
+        id: params
+        run: |
+          # Use workflow_dispatch inputs if available, else use scheduled defaults
+          echo "max_rows=${{ github.event.inputs.max_rows || '50000' }}" >> $GITHUB_OUTPUT
+          echo "threshold_pct=${{ github.event.inputs.threshold_pct || '0.80' }}" >> $GITHUB_OUTPUT
+          echo "target_pct=${{ github.event.inputs.target_pct || '0.70' }}" >> $GITHUB_OUTPUT
+
+      - name: Trigger evict_lfu_cache via Supabase RPC
+        id: eviction
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/evict_lfu_cache" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"p_max_rows\": ${{ steps.params.outputs.max_rows }},
+              \"p_threshold_pct\": ${{ steps.params.outputs.threshold_pct }},
+              \"p_target_pct\": ${{ steps.params.outputs.target_pct }}
+            }")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Eviction RPC failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+          # Surface key fields from the JSON response in the job summary
+          TRIGGERED=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('triggered', 'unknown'))")
+          EVICTED=$(echo "$BODY"   | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('rows_evicted', 0))")
+          BEFORE=$(echo "$BODY"    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('rows_before', '?'))")
+          AFTER=$(echo "$BODY"     | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('rows_after', '?'))")
+
+          echo "triggered=$TRIGGERED" >> $GITHUB_OUTPUT
+          echo "rows_evicted=$EVICTED" >> $GITHUB_OUTPUT
+          echo "rows_before=$BEFORE"   >> $GITHUB_OUTPUT
+          echo "rows_after=$AFTER"     >> $GITHUB_OUTPUT
+
+      - name: Write Job Summary
+        if: always()
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## AXIOM Cache Eviction Report
+
+          | Parameter          | Value |
+          |--------------------|-------|
+          | **Triggered**      | ${{ steps.eviction.outputs.triggered }} |
+          | **Rows Before**    | ${{ steps.eviction.outputs.rows_before }} |
+          | **Rows Evicted**   | ${{ steps.eviction.outputs.rows_evicted }} |
+          | **Rows After**     | ${{ steps.eviction.outputs.rows_after }} |
+          | **Max Rows Cap**   | ${{ steps.params.outputs.max_rows }} |
+          | **Threshold**      | ${{ steps.params.outputs.threshold_pct }} ($(echo "${{ steps.params.outputs.threshold_pct }} * ${{ steps.params.outputs.max_rows }}" | python3 -c "import sys; x=sys.stdin.read().strip().split('*'); print(int(float(x[0])*float(x[1])))") rows) |
+          | **Target**         | ${{ steps.params.outputs.target_pct }} ($(echo "${{ steps.params.outputs.target_pct }} * ${{ steps.params.outputs.max_rows }}" | python3 -c "import sys; x=sys.stdin.read().strip().split('*'); print(int(float(x[0])*float(x[1])))") rows) |
+
+          > Eviction policy: **LFU + Recency Double-weight**, 7-day grace period for new entries.
+          EOF

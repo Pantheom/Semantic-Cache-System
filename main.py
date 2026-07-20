@@ -4,7 +4,7 @@ import math
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import torch
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
@@ -64,6 +64,21 @@ def update_ram_cache(query: str, response: str):
         del ram_cache[oldest_key]
     ram_cache[query] = response
 
+def record_hit(row_id: str):
+    """
+    Background task — atomically increments hit_count and refreshes
+    last_accessed_at for the matched DB row via the increment_hit() RPC.
+
+    row_id is a UUID string (Supabase returns uuid columns as str in Python).
+    Called via FastAPI BackgroundTasks so it never blocks the response.
+    A failure here is logged but does not affect the user-facing result.
+    """
+    try:
+        supabase.rpc("increment_hit", {"p_row_id": str(row_id)}).execute()
+        print(f"[HIT TRACK] Row {row_id} hit_count incremented.")
+    except Exception as e:
+        print(f"[HIT TRACK] Failed to increment hit for row {row_id}: {e}")
+
 def classify_query(query: str) -> dict:
     """
     Calls the classifier service (port 8001) to decide PERSONAL vs GENERAL.
@@ -97,7 +112,7 @@ async def health_check():
 
 # --- Core Routing Engine ---
 @app.post("/query")
-async def process_query(request: QueryRequest):
+async def process_query(request: QueryRequest, background_tasks: BackgroundTasks):
     user_prompt = request.prompt.strip()
 
     # 1. Tier 1: Lexical RAM Match
@@ -131,9 +146,11 @@ async def process_query(request: QueryRequest):
         
         if db_search.data:
             matched_row     = db_search.data[0]
+            matched_id      = matched_row["id"]
             matched_query   = matched_row["query_text"]
             cached_response = matched_row["response_text"]
             similarity      = round(matched_row["similarity"], 4)
+            current_hits    = matched_row.get("hit_count", 0)
 
             # Tier 2b: Cross-Encoder Reranker Verification
             raw_logit = reranker_model.predict([user_prompt, matched_query])
@@ -142,7 +159,11 @@ async def process_query(request: QueryRequest):
             if reranker_score >= RERANKER_THRESHOLD:
                 # Backfill RAM for next time
                 update_ram_cache(user_prompt, cached_response)
-                print(f"[DB HIT]   '{user_prompt[:50]}' (similarity: {similarity}, reranker: {reranker_score})")
+                print(f"[DB HIT]   '{user_prompt[:50]}' (similarity: {similarity}, reranker: {reranker_score}, hits: {current_hits})")
+
+                # --- V2: Non-blocking hit tracking ---
+                # Fires after the response is sent — zero latency impact.
+                background_tasks.add_task(record_hit, matched_id)
 
                 return {
                     "status":   "success",
@@ -154,6 +175,7 @@ async def process_query(request: QueryRequest):
                         "similarity_score":   similarity,
                         "reranker_score":     reranker_score,
                         "reranker_model":     "BAAI/bge-reranker-base",
+                        "hit_count":          current_hits + 1,   # optimistic — reflects the pending increment
                         "classifier_called":  False,
                         "classifier_note":    "Classifier not called on cache hits",
                     }

@@ -4,6 +4,8 @@ A **production-ready semantic caching layer** for LLM-powered applications. Inst
 
 Built for the **AXIOM V2.0** platform as a standalone microservice.
 
+> **Version:** 2.0 Stable — LFU eviction, hit tracking, GitHub Actions scheduler
+
 ---
 
 ## How It Works
@@ -81,7 +83,7 @@ SUPABASE_KEY="your-anon-key"
 
 ### 4. Set Up the Supabase Table
 
-Run this SQL in your Supabase SQL Editor:
+**Version 1 (fresh install):** Run this SQL in your Supabase SQL Editor:
 
 ```sql
 -- Enable pgvector
@@ -95,27 +97,13 @@ CREATE TABLE shared_llm_cache (
     embedding     vector(768),
     created_at    TIMESTAMPTZ DEFAULT now()
 );
+```
 
--- Semantic search function
-CREATE OR REPLACE FUNCTION match_shared_cache(
-    query_embedding vector(768),
-    match_threshold float,
-    match_count     int
-)
-RETURNS TABLE (
-    id            bigint,
-    query_text    text,
-    response_text text,
-    similarity    float
-)
-LANGUAGE sql STABLE AS $$
-    SELECT id, query_text, response_text,
-           1 - (embedding <=> query_embedding) AS similarity
-    FROM shared_llm_cache
-    WHERE 1 - (embedding <=> query_embedding) > match_threshold
-    ORDER BY embedding <=> query_embedding
-    LIMIT match_count;
-$$;
+**Version 2 migration (existing installs):** Run `v2_migration.sql` in your Supabase SQL Editor to add hit tracking columns, the LFU index, and the `evict_lfu_cache()` stored procedure. The script is fully idempotent — safe to run multiple times.
+
+```bash
+# The SQL file is in the project root:
+cat v2_migration.sql   # review, then paste into Supabase SQL Editor
 ```
 
 ### 5. Run the Services
@@ -207,9 +195,13 @@ Main cache lookup endpoint.
 
 ```
 semantic_cache/
-├── main.py                  # FastAPI cache API (port 8000)
+├── main.py                  # FastAPI cache API (port 8000) — V2: hit tracking
 ├── query_classifier.py      # Privacy gatekeeper service (port 8001)
 ├── seed_cache.py            # Dataset seeding script
+├── v2_migration.sql         # V2 database migration — run in Supabase SQL Editor
+├── .github/
+│   └── workflows/
+│       └── evict_cache.yml  # Scheduled LFU eviction (GitHub Actions)
 ├── frontend/
 │   └── index.html           # Browser-based test console
 ├── .env.example             # Environment variable template
@@ -234,12 +226,26 @@ For **production deployment**, see Section 12 of the [full documentation](./AXIO
 
 ---
 
+## GitHub Actions Setup (V2)
+
+The LFU eviction runs automatically via GitHub Actions — no server required.
+
+1. Push this repo to GitHub (if not already done)
+2. Go to **Settings → Secrets and variables → Actions**
+3. Add two secrets:
+   - `SUPABASE_URL` — `https://your-project-id.supabase.co`
+   - `SUPABASE_SERVICE_KEY` — the **service_role** key *(Supabase → Settings → API → Service Role)*
+4. The workflow at `.github/workflows/evict_cache.yml` fires automatically every 2 days at 02:00 UTC
+5. For an on-demand run: **Actions → LFU Cache Eviction → Run workflow**
+
+---
+
 ## Version History
 
 | Version | Status | Notes |
 |---------|--------|-------|
 | 1.0 | ✅ Stable | Three-tier cache, privacy gatekeeper, ~35K seeded rows |
-| 2.0 | 🔜 Planned | LFU eviction, DB size cap (50K rows), GitHub Actions scheduler |
+| 2.0 | ✅ Stable | LFU eviction, DB size cap (50K rows), hit tracking, GitHub Actions scheduler |
 
 ---
 

@@ -1,10 +1,10 @@
 # AXIOM Semantic Cache
 ## System Documentation
 
-> **Version:** 1.0 (Stable) · **Project:** AXIOM V2.0 AI Services
+> **Version:** 2.0 (Stable) · **Project:** AXIOM V2.0 AI Services
 > **Purpose:** This document explains how the AXIOM Semantic Cache works, how to deploy it, and what data can be used to seed it. It is written so that anyone — technical or not — can understand the system.
 >
-> **Version 2.0** (planned) will introduce database scalability controls. See [Section 15](#15-version-2-roadmap--scalability) for the full design.
+> **Version 2.0** introduces database scalability controls. See [Section 15](#15-version-2-roadmap--scalability) for the full design.
 
 ---
 
@@ -656,9 +656,10 @@ Returns service status, model name, and current NLI threshold.
 
 ---
 
-## 15. Version 2 Roadmap — Scalability
+## 15. Version 2 — Scalability (Implemented)
 
-> **Status:** Planned for Version 2.0. No code changes have been made in V1. This section documents the agreed design so the team can implement it when ready.
+> **Status:** ✅ Implemented in Version 2.0. The following documents the design as built.
+> **Files shipped:** `v2_migration.sql`, `.github/workflows/evict_cache.yml`, `main.py` (updated).
 
 ### The Problem
 
@@ -811,4 +812,4 @@ GitHub Secrets needed:
 
 *Documentation generated for AXIOM V2.0 — AI Services*
 *Semantic Cache System — July 2026*
-*V1.0 Stable · V2.0 Scalability Roadmap documented*
+*V1.0 Stable · V2.0 Stable — LFU eviction, hit tracking, GitHub Actions scheduler*
