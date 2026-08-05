@@ -504,20 +504,19 @@ Run the services on your own machine and expose Port 8002 publicly using Cloudfl
 
 ### Option B — AWS EC2 (Production)
 
-Run all three services on an EC2 instance. Use the included `deploy_bridge.sh` to manage the Bridge API as a `systemd` service.
+Run all three services on an EC2 instance. Use the included `deploy_aws.sh` to start and manage the services in the background.
 
 **Steps:**
 1. Launch an EC2 instance (Ubuntu 22.04 recommended)
 2. Open port `8002/tcp` inbound in the Security Group
 3. Clone the repository and install dependencies
 4. Add credentials to `.env`
-5. Run `./deploy_bridge.sh` to start the bridge as a systemd service
-6. Start ports 8000 and 8001 using the existing `deploy_aws.sh`
+5. Run `./deploy_aws.sh` to start all three services (Cache, Classifier, Bridge)
 
 **Checking service status:**
 ```bash
-sudo systemctl status semantic-cache-bridge
-journalctl -u semantic-cache-bridge -f   # live logs
+tail -f logs/bridge_api.log   # live logs for Port 8002
+tail -f logs/main_api.log     # live logs for Port 8000
 ```
 
 ### Option C — Oracle Cloud Always Free
