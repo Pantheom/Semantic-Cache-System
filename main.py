@@ -52,11 +52,6 @@ class QueryRequest(BaseModel):
     prompt: str
 
 # --- Helpers ---
-def generate_llm_response(prompt: str) -> str:
-    """
-    Placeholder for your actual LLM call (e.g., Groq, OpenAI).
-    """
-    return f"[Live Generated] I am a newly generated response for: {prompt}"
 
 def update_ram_cache(query: str, response: str):
     if len(ram_cache) >= RAM_LIMIT:
@@ -82,7 +77,10 @@ def record_hit(row_id: str):
 def classify_query(query: str) -> dict:
     """
     Calls the classifier service (port 8001) to decide PERSONAL vs GENERAL.
-    Called only on cache misses — zero overhead on cache hits.
+
+    Called on every request — on hits to inform the calling backend of query type,
+    on misses so the calling backend knows whether this query is safe to cache
+    (GENERAL = cacheable, PERSONAL = skip storage).
 
     Defaults to PERSONAL if the classifier is unreachable:
     better to skip caching than to risk storing private data.
@@ -102,7 +100,7 @@ def classify_query(query: str) -> dict:
               (f", reason: {reason}" if reason else "") + ")")
         return {"label": label, "decision_layer": layer, "heuristic_reason": reason}
     except Exception as e:
-        print(f"[CLASSIFIER] Unreachable: {e} — defaulting to PERSONAL (DB skipped)")
+        print(f"[CLASSIFIER] Unreachable: {e} — defaulting to PERSONAL")
         return {"label": "PERSONAL", "decision_layer": "UNAVAILABLE", "heuristic_reason": None}
 
 # --- Health Check Endpoint ---
@@ -110,23 +108,37 @@ def classify_query(query: str) -> dict:
 async def health_check():
     return {"status": "ok", "service": "cache_api", "device": device}
 
-# --- Core Routing Engine ---
+# --- Core Query Endpoint ---
 @app.post("/query")
 async def process_query(request: QueryRequest, background_tasks: BackgroundTasks):
+    """
+    Three-tier cache lookup. Returns a hit (with cached response + classification)
+    or a miss (with classification). No LLM generation happens here — that is
+    handled by your application.
+
+    Classification is returned on every response:
+      GENERAL  → query is about general knowledge — safe to cache
+      PERSONAL → query is about user-specific data — do not cache
+    """
     user_prompt = request.prompt.strip()
 
-    # 1. Tier 1: Lexical RAM Match
+    # 1. Tier 1: RAM Exact Match
     if user_prompt in ram_cache:
+        # Run classifier so the calling backend knows the query type even on hits.
+        # Heuristic layer is <1ms so latency impact on RAM hits is negligible.
+        classification = classify_query(user_prompt)
         print(f"[RAM HIT]  '{user_prompt[:50]}'")
         return {
-            "status":   "success",
-            "source":   "RAM_Exact_Hit",
-            "response": ram_cache[user_prompt],
+            "status":          "success",
+            "source":          "RAM_Exact_Hit",
+            "response":        ram_cache[user_prompt],
+            "classification":  classification["label"],
             "debug": {
                 "tier":               "RAM",
                 "cached":             True,
-                "classifier_called":  False,
-                "classifier_note":    "Classifier not called on cache hits",
+                "classifier_called":  True,
+                "decision_layer":     classification["decision_layer"],
+                "heuristic_reason":   classification["heuristic_reason"],
             }
         }
 
@@ -136,14 +148,14 @@ async def process_query(request: QueryRequest, background_tasks: BackgroundTasks
     # 3. Tier 2: Semantic DB Match
     try:
         db_search = supabase.rpc(
-            "match_shared_cache", 
+            "match_shared_cache",
             {
-                "query_embedding": query_vector, 
-                "match_threshold": SIMILARITY_THRESHOLD, 
-                "match_count": 1
+                "query_embedding": query_vector,
+                "match_threshold": SIMILARITY_THRESHOLD,
+                "match_count":     1
             }
         ).execute()
-        
+
         if db_search.data:
             matched_row     = db_search.data[0]
             matched_id      = matched_row["id"]
@@ -153,7 +165,7 @@ async def process_query(request: QueryRequest, background_tasks: BackgroundTasks
             current_hits    = matched_row.get("hit_count", 0)
 
             # Tier 2b: Cross-Encoder Reranker Verification
-            raw_logit = reranker_model.predict([user_prompt, matched_query])
+            raw_logit      = reranker_model.predict([user_prompt, matched_query])
             reranker_score = round(1 / (1 + math.exp(-float(raw_logit))), 4)
 
             if reranker_score >= RERANKER_THRESHOLD:
@@ -161,67 +173,52 @@ async def process_query(request: QueryRequest, background_tasks: BackgroundTasks
                 update_ram_cache(user_prompt, cached_response)
                 print(f"[DB HIT]   '{user_prompt[:50]}' (similarity: {similarity}, reranker: {reranker_score}, hits: {current_hits})")
 
-                # --- V2: Non-blocking hit tracking ---
-                # Fires after the response is sent — zero latency impact.
+                # Non-blocking hit tracking — fires after response is sent.
                 background_tasks.add_task(record_hit, matched_id)
 
+                # DB entries are always GENERAL by definition — personal queries
+                # are never written to the shared DB (Privacy Gatekeeper rule).
                 return {
-                    "status":   "success",
-                    "source":   "DB_Semantic_Hit",
-                    "response": cached_response,
+                    "status":          "success",
+                    "source":          "DB_Semantic_Hit",
+                    "response":        cached_response,
+                    "classification":  "GENERAL",
                     "debug": {
                         "tier":               "DB",
                         "cached":             True,
                         "similarity_score":   similarity,
                         "reranker_score":     reranker_score,
                         "reranker_model":     "BAAI/bge-reranker-base",
-                        "hit_count":          current_hits + 1,   # optimistic — reflects the pending increment
+                        "hit_count":          current_hits + 1,
                         "classifier_called":  False,
-                        "classifier_note":    "Classifier not called on cache hits",
+                        "classifier_note":    "DB entries are always GENERAL — no classifier needed",
                     }
                 }
             else:
-                print(f"[CACHE REJECT] '{user_prompt[:45]}' matched DB '{matched_query[:45]}' (similarity: {similarity}) but rejected by reranker ({reranker_score} < {RERANKER_THRESHOLD})")
+                print(f"[CACHE REJECT] '{user_prompt[:45]}' matched DB '{matched_query[:45]}' "
+                      f"(similarity: {similarity}) but rejected by reranker ({reranker_score} < {RERANKER_THRESHOLD})")
     except Exception as e:
         print(f"Vector/Reranker search failed: {e}")
 
-    # 4. Cache Miss: Generate fresh response
-    fresh_response = generate_llm_response(user_prompt)
-
-    # Always store in RAM — exact-match only, ephemeral, not semantically searchable
-    update_ram_cache(user_prompt, fresh_response)
-
-    # --- Gatekeeper: only persist to shared DB if query is GENERAL ---
-    # Classification happens here (at storage time) — zero cost on cache hits.
+    # 4. Cache Miss — no LLM generation here.
+    # Classify so the calling application knows whether this query type is
+    # safe to cache after LLM generation:
+    #   GENERAL  → safe to cache (general world knowledge)
+    #   PERSONAL → do not cache (user-specific data, privacy protection)
     classification = classify_query(user_prompt)
     query_type     = classification["label"]
-    db_stored      = False
-
-    if query_type == "GENERAL":
-        try:
-            supabase.table("shared_llm_cache").insert({
-                "query_text":    user_prompt,
-                "response_text": fresh_response,
-                "embedding":     query_vector
-            }).execute()
-            db_stored = True
-            print(f"[DB STORE] General query stored in DB.")
-        except Exception as e:
-            print(f"[DB STORE] Insert failed: {e}")
-    else:
-        print(f"[DB SKIP]  Personal query — DB storage skipped.")
+    print(f"[MISS]     '{user_prompt[:50]}' — classification: {query_type}")
 
     return {
-        "status":   "success",
-        "source":   "LLM_Generation_Miss",
-        "response": fresh_response,
+        "status":          "success",
+        "source":          "Cache_Miss",
+        "response":        None,
+        "classification":  query_type,
         "debug": {
-            "tier":               "LLM",
+            "tier":               "MISS",
             "cached":             False,
             "classifier_called":  True,
-            "query_type":         query_type,
             "decision_layer":     classification["decision_layer"],
             "heuristic_reason":   classification["heuristic_reason"],
-            "db_stored":          db_stored,
         }
-    }
+    }

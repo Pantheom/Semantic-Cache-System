@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ==============================================================================
-# AXIOM Semantic Cache — AWS EC2 One-Click Deployment & Restart Script
+# Hybrid Semantic Cache — AWS EC2 One-Click Deployment & Restart Script
 # ==============================================================================
 # Usage on AWS EC2 (Ubuntu/Linux):
 #   chmod +x deploy_aws.sh
@@ -10,7 +10,7 @@
 set -e # Exit immediately if any command fails
 
 echo "========================================================"
-echo "🚀 Starting AXIOM Hybrid Cache Deployment on AWS EC2..."
+echo "🚀 Starting Hybrid Semantic Cache Deployment on AWS EC2..."
 echo "========================================================"
 
 # 1. Create logs directory if it doesn't exist
@@ -65,3 +65,6 @@ echo "💡 To check live status or watch logs on AWS:"
 echo "   tail -f logs/main_api.log"
 echo "   tail -f logs/classifier.log"
 echo "========================================================"
+
+
+

@@ -1,45 +1,49 @@
-# AXIOM Semantic Cache
+# Hybrid Semantic Cache
 
-A **production-ready semantic caching layer** for LLM-powered applications. Instead of calling an LLM for every query, the system finds semantically similar previously-answered questions and returns the cached response — drastically cutting latency and API costs.
+A **production-ready semantic caching layer** for LLM-powered applications. Instead of calling an LLM for every query, the system finds semantically similar previously-answered questions and returns the cached response — cutting latency from seconds to milliseconds and eliminating redundant API costs.
 
-Built for the **AXIOM V2.0** platform as a standalone microservice.
-
-> **Version:** 2.0 Stable — LFU eviction, hit tracking, GitHub Actions scheduler
+> **Version:** 2.0 Stable — Bridge API, LFU eviction, hit tracking, GitHub Actions scheduler
 
 ---
 
 ## How It Works
 
 ```
-User Query
-    │
-    ▼
-┌─────────────────┐
-│  Tier 1: RAM    │  Exact string match (0ms)
-│  (in-memory)    │──────────────────────────► Cache Hit → Return instantly
-└────────┬────────┘
-         │ Miss
-         ▼
-┌─────────────────┐
-│  Tier 2: DB     │  Semantic vector search via pgvector (5–20ms)
-│  (Supabase)     │──────────────────────────► Cache Hit → Return + backfill RAM
-└────────┬────────┘
-         │ Miss
-         ▼
-┌─────────────────┐
-│  Privacy Gate   │  Classify: GENERAL or PERSONAL?
-│  (Classifier)   │
-└────────┬────────┘
-         │
-    GENERAL → store in DB for future users
-    PERSONAL → ephemeral RAM only, never persisted
-         │
-         ▼
-    LLM Generation (your provider)
+Your Application
+     │
+     │  POST /v1/cache/query  (X-API-Key)
+     ▼
+┌────────────────────────┐
+│  Bridge API (Port 8002) │  Auth, request IDs, error enveloping
+└────────────┬───────────┘
+             │  internal
+             ▼
+┌────────────────────────┐
+│  Tier 1: RAM           │  Exact string match (<1ms)
+│  (in-memory dict)      │───────────────────────────► Hit → return instantly
+└────────────┬───────────┘
+             │ Miss → embed query
+             ▼
+┌────────────────────────┐
+│  Tier 2: DB            │  Semantic vector search + reranker (50–200ms)
+│  (Supabase pgvector)   │───────────────────────────► Hit → return + backfill RAM
+└────────────┬───────────┘
+             │ Miss
+             ▼
+┌────────────────────────┐
+│  Privacy Classifier    │  GENERAL or PERSONAL?
+│  (Port 8001)           │
+└────────────┬───────────┘
+             │
+     GENERAL  →  cache_hit: false, classification: GENERAL
+     PERSONAL →  cache_hit: false, classification: PERSONAL
+             │
+             ▼
+     Your application calls its LLM
 ```
 
 The **Privacy Gatekeeper** (`query_classifier.py`) runs a two-layer check:
-- **Layer 1 — Heuristic** (0ms): regex + personal noun patterns
+- **Layer 1 — Heuristic** (<1ms): regex + personal noun patterns
 - **Layer 2 — NLI** (~10ms): DeBERTa-v3-small zero-shot classifier
 
 Only `GENERAL` queries are stored in the shared DB — personal queries are never cached beyond the current session.
@@ -56,12 +60,12 @@ Only `GENERAL` queries are stored in the shared DB — personal queries are neve
 ### 2. Clone & Install
 
 ```bash
-git clone https://github.com/your-org/axiom-semantic-cache.git
-cd axiom-semantic-cache
+git clone https://github.com/your-org/semantic-cache.git
+cd semantic-cache
 
 python -m venv .venv
 .venv\Scripts\activate        # Windows
-# or: source .venv/bin/activate  # Linux/macOS
+source .venv/bin/activate     # Linux/macOS
 
 pip install -r requirements.txt
 ```
@@ -74,16 +78,18 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your Supabase credentials:
+Edit `.env` and fill in your credentials:
 
 ```env
 SUPABASE_URL="https://your-project-id.supabase.co"
 SUPABASE_KEY="your-anon-key"
+
+BRIDGE_API_KEY="generate-a-strong-secret"   # your application sends this as X-API-Key
 ```
 
 ### 4. Set Up the Supabase Table
 
-**Version 1 (fresh install):** Run this SQL in your Supabase SQL Editor:
+**Fresh install:** Run this SQL in your Supabase SQL Editor:
 
 ```sql
 -- Enable pgvector
@@ -91,7 +97,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Cache table
 CREATE TABLE shared_llm_cache (
-    id            BIGSERIAL PRIMARY KEY,
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     query_text    TEXT NOT NULL UNIQUE,
     response_text TEXT NOT NULL,
     embedding     vector(768),
@@ -99,35 +105,61 @@ CREATE TABLE shared_llm_cache (
 );
 ```
 
-**Version 2 migration (existing installs):** Run `v2_migration.sql` in your Supabase SQL Editor to add hit tracking columns, the LFU index, and the `evict_lfu_cache()` stored procedure. The script is fully idempotent — safe to run multiple times.
-
-```bash
-# The SQL file is in the project root:
-cat v2_migration.sql   # review, then paste into Supabase SQL Editor
-```
+**Existing install (Version 1 → 2 migration):** Run `v2_migration.sql` in your Supabase SQL Editor to add hit tracking, LFU indexing, and the `evict_lfu_cache()` stored procedure. The script is idempotent — safe to run multiple times.
 
 ### 5. Run the Services
 
-Open **two terminals**:
+Open **three terminals**:
 
-**Terminal 1 — Classifier (port 8001):**
+**Terminal 1 — Classifier (Port 8001):**
 ```bash
-uvicorn query_classifier:app --port 8001 --reload
+uvicorn query_classifier:app --port 8001
 ```
 
-**Terminal 2 — Cache API (port 8000):**
+**Terminal 2 — Cache API (Port 8000):**
 ```bash
-uvicorn main:app --port 8000 --reload
+uvicorn main:app --port 8000
+```
+
+**Terminal 3 — Bridge API (Port 8002):**
+```bash
+uvicorn axiom_bridge:app --port 8002
 ```
 
 ### 6. Test It
 
-Open `frontend/index.html` in your browser for the interactive test console, or call the API directly:
-
 ```bash
-curl -X POST http://localhost:8000/query \
+# Check the bridge is up
+curl http://localhost:8002/health
+
+# Make a cache query
+curl -X POST http://localhost:8002/v1/cache/query \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your-bridge-api-key" \
   -d '{"prompt": "What is machine learning?"}'
+```
+
+Or open `frontend/index.html` in your browser for the interactive test console.
+
+---
+
+## Integrating with Your Application
+
+See **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** for complete integration examples in Python, JavaScript/TypeScript, and cURL.
+
+**The one-line summary:** Check the cache before every LLM call. If `cache_hit: true`, use the response. If `cache_hit: false`, call your LLM.
+
+```python
+result = requests.post(
+    "http://your-cache-host:8002/v1/cache/query",
+    headers={"X-API-Key": API_KEY},
+    json={"prompt": user_message},
+).json()
+
+if result["cache_hit"]:
+    return result["response"]   # serve from cache
+else:
+    return call_your_llm(user_message)   # go to LLM
 ```
 
 ---
@@ -140,103 +172,134 @@ The `seed_cache.py` script populates the database with pre-embedded Q&A pairs fo
 python seed_cache.py
 ```
 
-Edit the config section at the top of `seed_cache.py` to switch datasets. Supported datasets (download locally first):
+Supported datasets (download locally first):
 
-| Dataset | HuggingFace Path | Format |
-|---------|-----------------|--------|
-| OpenHermes 2.5 | `teknium/OpenHermes-2.5` | `conversations[].value` |
-| Dolly 15K | `databricks/databricks-dolly-15k` | `instruction` / `response` |
-| WizardLM 70K | `WizardLM/WizardLM_evol_instruct_70k` | `instruction` / `output` |
-| FLAN | `Muennighoff/flan` | `inputs` / `targets` |
-| ShareGPT | `Aeala/ShareGPT_Vicuna_unfiltered` | `conversations[].value` |
+| Dataset | HuggingFace Path | Recommended rows |
+|---------|-----------------|-----------------|
+| OpenHermes 2.5 | `teknium/OpenHermes-2.5` | 8,000 |
+| Dolly 15K | `databricks/databricks-dolly-15k` | 5,000 |
+| WizardLM 70K | `WizardLM/WizardLM_evol_instruct_70k` | 3,000 |
+| ShareGPT | `Aeala/ShareGPT_Vicuna_unfiltered` | 3,000 |
 
 ---
 
-## API Reference
+## Bridge API Reference
 
-### `POST /query`
-Main cache lookup endpoint.
+All external requests go to the **Bridge API (Port 8002)**.
+
+### `POST /v1/cache/query`
 
 **Request:**
 ```json
-{ "prompt": "Explain gradient descent" }
-```
-
-**Response:**
-```json
 {
-  "status": "success",
-  "source": "DB_Semantic_Hit",
-  "response": "Gradient descent is an optimization algorithm...",
-  "debug": {
-    "tier": "DB",
-    "cached": true,
-    "similarity_score": 0.9231,
-    "classifier_called": false
-  }
+  "prompt": "Explain gradient descent",
+  "user_id": "optional-uuid",
+  "session_id": "optional-session-id"
 }
 ```
 
-**Source values:**
+**Response (hit):**
+```json
+{
+  "request_id": "uuid",
+  "cache_hit": true,
+  "source": "DB_Semantic_Hit",
+  "response": "Gradient descent is an optimization algorithm...",
+  "classification": "GENERAL",
+  "latency_ms": 145.2,
+  "debug": { "tier": "DB", "similarity_score": 0.923, "reranker_score": 0.84, "hit_count": 7 }
+}
+```
+
+**Response (miss):**
+```json
+{
+  "request_id": "uuid",
+  "cache_hit": false,
+  "source": "Cache_Miss",
+  "response": null,
+  "classification": "GENERAL",
+  "latency_ms": 87.3,
+  "debug": { "tier": "MISS", "classifier_called": true }
+}
+```
+
 | Source | Meaning |
 |--------|---------|
-| `RAM_Exact_Hit` | Returned from in-memory cache |
-| `DB_Semantic_Hit` | Matched a semantically similar cached query |
-| `LLM_Generation_Miss` | Full cache miss — LLM was called |
+| `RAM_Exact_Hit` | Exact match in session memory — <5ms |
+| `DB_Semantic_Hit` | Semantic match in vector database — 50–300ms |
+| `Cache_Miss` | No match found — your application should call its LLM |
 
-### `GET /health` (Classifier service)
-```json
-{ "status": "ok", "nli_model": "cross-encoder/nli-deberta-v3-small", "device": "cuda" }
-```
+### `GET /health` — No auth required
+### `GET /v1/stats` — Session hit/miss statistics
 
 ---
 
 ## Project Structure
 
 ```
-semantic_cache/
-├── main.py                  # FastAPI cache API (port 8000) — V2: hit tracking
-├── query_classifier.py      # Privacy gatekeeper service (port 8001)
-├── seed_cache.py            # Dataset seeding script
-├── v2_migration.sql         # V2 database migration — run in Supabase SQL Editor
-├── .github/
-│   └── workflows/
-│       └── evict_cache.yml  # Scheduled LFU eviction (GitHub Actions)
+semantic-cache/
+├── main.py                    # Cache API (Port 8000) — three-tier lookup engine
+├── axiom_bridge.py            # Bridge API (Port 8002) — public-facing entry point
+├── bridge_models.py           # Pydantic schemas for the Bridge API
+├── query_classifier.py        # Privacy Gatekeeper (Port 8001)
+├── seed_cache.py              # Dataset seeding script
+├── deploy_aws.sh              # EC2 deployment script (main cache + classifier)
+├── deploy_bridge.sh           # EC2 deployment script (bridge API as systemd service)
+├── v2_migration.sql           # V2 database migration
+├── .github/workflows/
+│   └── evict_cache.yml        # Scheduled LFU eviction (GitHub Actions, every 2 days)
 ├── frontend/
-│   └── index.html           # Browser-based test console
-├── .env.example             # Environment variable template
-├── requirements.txt         # Pinned Python dependencies
-└── AXIOM_Semantic_Cache_Documentation.md  # Full system documentation
+│   └── index.html             # Browser-based test console
+├── tests/
+│   └── test_bridge_api.py     # Integration tests (14 tests)
+├── .env.example               # Environment variable template
+├── requirements.txt           # Pinned Python dependencies
+├── Semantic_Cache_Documentation.md   # Full system documentation
+└── INTEGRATION_GUIDE.md              # Integration guide for LLM applications
 ```
 
 ---
 
 ## Deployment
 
-For a **hackathon / demo environment**, run the services locally and expose them via [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/):
-
+**Demo / Hackathon — Cloudflare Tunnel (free, no setup):**
 ```bash
-# Install cloudflared, then:
-cloudflared tunnel --url http://localhost:8000
+cloudflared tunnel --url http://localhost:8002
 ```
+This gives a public HTTPS URL instantly with no port-forwarding needed.
 
-This gives you a public HTTPS URL with no port-forwarding or firewall configuration needed.
+**Production — AWS EC2:**
+1. Open port `8002/tcp` inbound in Security Group
+2. Add credentials to `.env`
+3. Run `./deploy_aws.sh` (starts Ports 8000 + 8001)
+4. Run `./deploy_bridge.sh` (starts Port 8002 as systemd service)
 
-For **production deployment**, see Section 12 of the [full documentation](./AXIOM_Semantic_Cache_Documentation.md).
+See [Semantic_Cache_Documentation.md](./Semantic_Cache_Documentation.md) for full deployment details.
+
+> **Security:** Only expose Port 8002 publicly. Ports 8000 and 8001 are internal.
 
 ---
 
-## GitHub Actions Setup (V2)
+## GitHub Actions Setup (V2 — LFU Eviction)
 
-The LFU eviction runs automatically via GitHub Actions — no server required.
+The database is automatically pruned when it approaches 50,000 rows.
 
-1. Push this repo to GitHub (if not already done)
-2. Go to **Settings → Secrets and variables → Actions**
-3. Add two secrets:
-   - `SUPABASE_URL` — `https://your-project-id.supabase.co`
-   - `SUPABASE_SERVICE_KEY` — the **service_role** key *(Supabase → Settings → API → Service Role)*
-4. The workflow at `.github/workflows/evict_cache.yml` fires automatically every 2 days at 02:00 UTC
-5. For an on-demand run: **Actions → LFU Cache Eviction → Run workflow**
+1. Push this repo to GitHub
+2. Go to **Settings → Secrets → Actions**
+3. Add: `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` (the service_role key from Supabase → Settings → API)
+4. The workflow at `.github/workflows/evict_cache.yml` fires every 2 days at 02:00 UTC
+5. Manual run: **Actions → LFU Cache Eviction → Run workflow**
+
+---
+
+## Running Tests
+
+```bash
+pytest tests/test_bridge_api.py -v
+```
+
+14 tests covering: health, auth, RAM hits, DB hits, GENERAL misses, PERSONAL misses, stats.
 
 ---
 
@@ -244,8 +307,8 @@ The LFU eviction runs automatically via GitHub Actions — no server required.
 
 | Version | Status | Notes |
 |---------|--------|-------|
-| 1.0 | ✅ Stable | Three-tier cache, privacy gatekeeper, ~35K seeded rows |
-| 2.0 | ✅ Stable | LFU eviction, DB size cap (50K rows), hit tracking, GitHub Actions scheduler |
+| 1.0 | ✅ Stable | Three-tier cache, privacy gatekeeper, seeding pipeline |
+| 2.0 | ✅ Stable | Bridge API (Port 8002), X-API-Key auth, classification on all responses, LFU eviction, hit tracking, GitHub Actions scheduler |
 
 ---
 
