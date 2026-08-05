@@ -1,5 +1,5 @@
-"""
-AXIOM Semantic Cache — Accuracy Test Runner
+﻿"""
+Hybrid Semantic Cache — Accuracy Test Runner
 Sends all prompts from a CSV to the local API and reports metrics.
 
 Usage:
@@ -96,7 +96,7 @@ def classify(source):
 def print_header(csv_path, total):
     print()
     print(f"{B}{CY}{'═' * 68}{R}")
-    print(f"{B}{CY}  AXIOM Semantic Cache — Accuracy Test Runner{R}")
+    print(f"{B}{CY}  Hybrid Semantic Cache — Accuracy Test Runner{R}")
     print(f"{B}{CY}{'═' * 68}{R}")
     print(f"  {DM}CSV  : {csv_path}{R}")
     print(f"  {DM}Total: {total} prompts{R}")
@@ -183,7 +183,7 @@ def print_summary(stats, cat_stats, total, total_ms, has_cat):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="AXIOM Semantic Cache — Accuracy Test Runner")
+    parser = argparse.ArgumentParser(description="Hybrid Semantic Cache — Accuracy Test Runner")
     parser.add_argument(
         "--csv",
         default="test.csv",
@@ -244,3 +244,6 @@ if __name__ == "__main__":
             print(f"\n  {DM}── Progress {idx}/{total} │ Running hit rate: {running_pct:.1f}% ──{R}\n")
 
     print_summary(stats, cat_stats, total, total_ms, has_cat)
+
+
+

@@ -1,5 +1,5 @@
-"""
-AXIOM Semantic Cache — Query Classifier Service
+﻿"""
+Hybrid Semantic Cache — Query Classifier Service
 ===============================================
 Classifies incoming queries as PERSONAL or GENERAL before they reach the cache.
 
@@ -33,7 +33,7 @@ from transformers import pipeline
 # App Setup
 # ---------------------------------------------------------------------------
 app = FastAPI(
-    title="AXIOM Query Classifier",
+    title="Semantic Cache Query Classifier",
     description="Classifies queries as PERSONAL or GENERAL before semantic cache lookup.",
     version="1.0.0",
 )
@@ -348,3 +348,6 @@ def classify_compare(req: QueryRequest):
         nli       = n,
         agreement = h["label"] == n["label"],
     )
+
+
+

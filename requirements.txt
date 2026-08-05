@@ -4,6 +4,7 @@ uvicorn==0.50.2
 pydantic==2.13.4
 python-dotenv==1.2.2
 requests==2.34.2
+httpx==0.28.1            # async HTTP client — used by axiom_bridge.py
 
 # Supabase
 supabase==2.31.0
