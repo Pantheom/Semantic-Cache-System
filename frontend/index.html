@@ -53,6 +53,15 @@
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); transition: background .4s; }
     .dot.online { background: var(--ram); box-shadow: 0 0 8px var(--ram); }
 
+    .api-key-wrap { display: flex; align-items: center; gap: 8px; margin-left: auto; margin-right: 16px; }
+    #api-key-input {
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 12px; font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; width: 280px; outline: none; transition: border-color .2s;
+    }
+    #api-key-input:focus { border-color: var(--accent); }
+
     aside {
       background: var(--surface);
       border-right: 1px solid var(--border);
@@ -149,6 +158,12 @@
     .source-badge.LLM { background: rgba(245,158,11,.15);  color: var(--llm); border: 1px solid rgba(245,158,11,.3); }
     .source-badge.ERR { background: rgba(244,63,94,.15);   color: var(--danger); border: 1px solid rgba(244,63,94,.3); }
 
+    .class-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 7px; border-radius: 4px; background: var(--surface2);
+      font-size: 9px; font-weight: 600; letter-spacing: 0.05em; color: var(--muted); border: 1px solid var(--border);
+    }
+
     .similarity { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
     .latency    { font-size: 11px; color: var(--muted); margin-left: auto; }
 
@@ -206,7 +221,10 @@
 
   <header>
     <div class="logo">AX</div>
-    <h1>AXIOM Semantic Cache <span>/ Test Console</span></h1>
+    <h1>Semantic Cache <span>/ Bridge Test Console</span></h1>
+    <div class="api-key-wrap">
+      <input type="text" id="api-key-input" placeholder="Enter X-API-Key..." autocomplete="off"/>
+    </div>
     <div class="status-dot">
       <div class="dot" id="status-dot"></div>
       <span id="status-text">Connecting…</span>
@@ -270,14 +288,14 @@
 
 <script>
   const API = ['localhost', '127.0.0.1'].includes(window.location.hostname) 
-  ? 'http://127.0.0.1:8000' 
+  ? 'http://13.61.177.53:8002' 
   : '/api';
 
   let stats = { total: 0, ram: 0, db: 0, llm: 0 };
 
   async function checkHealth() {
     try {
-      const r = await fetch(API + '/docs', { signal: AbortSignal.timeout(2000) });
+      const r = await fetch(API + '/health', { signal: AbortSignal.timeout(2000) });
       setOnline(r.ok);
     } catch { setOnline(false); }
   }
@@ -332,13 +350,20 @@
     const t0 = performance.now();
 
     try {
-      const res = await fetch(API + '/query', {
+      const apiKey = document.getElementById('api-key-input').value.trim();
+      const res = await fetch(API + '/v1/cache/query', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey || 'missing-key'
+        },
         body: JSON.stringify({ prompt })
       });
       const data = await res.json();
-      const latency = Math.round(performance.now() - t0);
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'HTTP ' + res.status + ' Error');
+      }
 
       spinner.remove();
 
@@ -346,14 +371,19 @@
       let srcKey = 'ERR', srcLabel = srcRaw;
       if (srcRaw.startsWith('RAM'))  { srcKey = 'RAM'; srcLabel = '⚡ RAM Exact Hit'; }
       if (srcRaw.startsWith('DB'))   { srcKey = 'DB';  srcLabel = '🔍 DB Semantic Hit'; }
-      if (srcRaw.startsWith('LLM'))  { srcKey = 'LLM'; srcLabel = '🤖 LLM Miss'; }
+      if (srcRaw === 'Cache_Miss' || srcRaw.startsWith('LLM')) { srcKey = 'LLM'; srcLabel = '🤖 Cache Miss'; }
+
+      const latency = data.latency_ms !== undefined ? data.latency_ms : Math.round(performance.now() - t0);
+      const similarity = (data.debug && data.debug.similarity_score) ? data.debug.similarity_score : data.similarity_score;
+      const classification = data.classification ? `<span class="class-badge">${data.classification}</span>` : '';
 
       const card = document.createElement('div');
       card.className = 'response-card';
       card.innerHTML = `
         <div class="response-meta">
           <span class="source-badge ${srcKey}">${srcLabel}</span>
-          ${data.similarity_score ? `<span class="similarity">similarity: ${(data.similarity_score * 100).toFixed(1)}%</span>` : ''}
+          ${classification}
+          ${similarity ? `<span class="similarity">similarity: ${(similarity * 100).toFixed(1)}%</span>` : ''}
           <span class="latency">${latency}ms</span>
         </div>
         <div class="response-text">${esc(data.response || JSON.stringify(data, null, 2))}</div>
@@ -372,7 +402,7 @@
       card.className = 'response-card';
       card.innerHTML = `
         <div class="response-meta"><span class="source-badge ERR">⛔ Error</span></div>
-        <div class="response-text">${esc(String(err))}\n\nMake sure uvicorn is running:\n  uvicorn main:app --reload</div>
+        <div class="response-text">${esc(String(err))}\n\nMake sure the Bridge API is running and your X-API-Key is correct.</div>
       `;
       block.appendChild(card);
     }
