@@ -183,3 +183,32 @@ class ErrorResponse(BaseModel):
     error_code: str = Field(..., description="Machine-readable error code.")
     message: str = Field(..., description="Human-readable error description.")
     latency_ms: Optional[float] = None
+
+
+# ---------------------------------------------------------------------------
+# Cache Store models
+# ---------------------------------------------------------------------------
+
+class CacheStoreRequest(BaseModel):
+    """Payload for POST /v1/cache/store — save a prompt+response into the cache DB."""
+    prompt: str = Field(
+        ..., min_length=1, max_length=4096,
+        description="The user prompt to store.",
+    )
+    response: str = Field(
+        ..., min_length=1,
+        description="The LLM response to cache against this prompt.",
+    )
+
+    model_config = {"json_schema_extra": {
+        "example": {
+            "prompt": "What is the capital of France?",
+            "response": "The capital of France is Paris.",
+        }
+    }}
+
+
+class CacheStoreResponse(BaseModel):
+    """Response from POST /v1/cache/store."""
+    status: str = Field(..., description="'ok' on success.")
+    id: Optional[str] = Field(None, description="UUID of the newly inserted row.")

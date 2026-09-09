@@ -46,6 +46,8 @@ from bridge_models import (
     CacheQueryRequest,
     CacheQueryResponse,
     CacheDebugInfo,
+    CacheStoreRequest,
+    CacheStoreResponse,
     HealthResponse,
     StatsResponse,
     ErrorResponse,
@@ -340,6 +342,58 @@ async def cache_query(body: CacheQueryRequest) -> CacheQueryResponse:
         debug=_parse_debug(debug_raw),
     )
 
+
+@app.post(
+    "/v1/cache/store",
+    response_model=CacheStoreResponse,
+    summary="Store a prompt+response into the Semantic Cache DB",
+    tags=["Cache"],
+    dependencies=[Depends(verify_api_key)],
+    responses={
+        200: {"description": "Entry stored successfully"},
+        401: {"model": ErrorResponse, "description": "Missing or invalid API key"},
+        502: {"model": ErrorResponse, "description": "Upstream cache service unavailable"},
+    },
+)
+async def cache_store(body: CacheStoreRequest) -> CacheStoreResponse:
+    """
+    Compute embedding for the prompt and insert the prompt+response pair
+    into the shared_llm_cache Supabase table.
+
+    **Call this only on a confirmed cache miss after LLM generation.**
+    No duplicate check is performed — the caller is responsible for
+    not storing on cache hits.
+    """
+    try:
+        client = await get_http_client()
+        resp = await client.post(
+            f"{CACHE_API_URL}/store",
+            json={"prompt": body.prompt, "response": body.response},
+            timeout=30.0,  # embedding computation can take a moment on CPU
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        log.info("[STORE] Stored row id=%s prompt='%.60s'", data.get("id"), body.prompt)
+        return CacheStoreResponse(status=data["status"], id=data.get("id"))
+
+    except httpx.TimeoutException:
+        log.error("[STORE] Timeout calling upstream /store")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=ErrorResponse(
+                error_code="UPSTREAM_TIMEOUT",
+                message="The cache service timed out while storing the entry.",
+            ).model_dump(),
+        )
+    except httpx.HTTPError as exc:
+        log.error("[STORE] Upstream HTTP error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=ErrorResponse(
+                error_code="UPSTREAM_UNAVAILABLE",
+                message="The cache service is temporarily unavailable.",
+            ).model_dump(),
+        )
 
 
 @app.get(
