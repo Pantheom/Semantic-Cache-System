@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # Hybrid Semantic Cache — AWS EC2 One-Click Deployment & Restart Script
 # ==============================================================================
@@ -20,9 +20,11 @@ mkdir -p logs
 echo "🛑 Stopping existing Uvicorn server processes..."
 pkill -f "uvicorn query_classifier:app" || true
 pkill -f "uvicorn main:app" || true
-# Optionally kill anything occupying ports 8000 and 8001 directly
+pkill -f "uvicorn axiom_bridge:app" || true
+# Optionally kill anything occupying ports 8000, 8001, and 8002 directly
 fuser -k 8000/tcp 2>/dev/null || true
 fuser -k 8001/tcp 2>/dev/null || true
+fuser -k 8002/tcp 2>/dev/null || true
 sleep 2
 
 # 3. Pull latest code from Git repository
@@ -58,10 +60,19 @@ nohup uvicorn main:app --host 0.0.0.0 --port 8000 > logs/main_api.log 2>&1 &
 MAIN_PID=$!
 echo "   ↳ Main API started with PID: $MAIN_PID (Log: logs/main_api.log)"
 
+sleep 3
+
+# 7. Start the Bridge API (Port 8002)
+echo "⚡ Starting Bridge API on Port 8002..."
+nohup uvicorn axiom_bridge:app --host 0.0.0.0 --port 8002 > logs/bridge_api.log 2>&1 &
+BRIDGE_PID=$!
+echo "   ↳ Bridge API started with PID: $BRIDGE_PID (Log: logs/bridge_api.log)"
+
 echo "========================================================"
-echo "✅ Deployment Successful! Both servers are running in background."
+echo "✅ Deployment Successful! All 3 servers are running in background."
 echo "========================================================"
 echo "💡 To check live status or watch logs on AWS:"
+echo "   tail -f logs/bridge_api.log"
 echo "   tail -f logs/main_api.log"
 echo "   tail -f logs/classifier.log"
 echo "========================================================"

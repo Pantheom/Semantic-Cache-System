@@ -244,8 +244,7 @@ semantic-cache/
 ├── bridge_models.py           # Pydantic schemas for the Bridge API
 ├── query_classifier.py        # Privacy Gatekeeper (Port 8001)
 ├── seed_cache.py              # Dataset seeding script
-├── deploy_aws.sh              # EC2 deployment script (main cache + classifier)
-├── deploy_bridge.sh           # EC2 deployment script (bridge API as systemd service)
+├── deploy_aws.sh              # EC2 deployment script (starts all 3 services)
 ├── v2_migration.sql           # V2 database migration
 ├── .github/workflows/
 │   └── evict_cache.yml        # Scheduled LFU eviction (GitHub Actions, every 2 days)
@@ -272,8 +271,7 @@ This gives a public HTTPS URL instantly with no port-forwarding needed.
 **Production — AWS EC2:**
 1. Open port `8002/tcp` inbound in Security Group
 2. Add credentials to `.env`
-3. Run `./deploy_aws.sh` (starts Ports 8000 + 8001)
-4. Run `./deploy_bridge.sh` (starts Port 8002 as systemd service)
+3. Run `./deploy_aws.sh` (starts Ports 8000, 8001, and 8002 in the background)
 
 See [Semantic_Cache_Documentation.md](./Semantic_Cache_Documentation.md) for full deployment details.
 
