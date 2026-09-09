@@ -305,8 +305,8 @@ pytest tests/test_bridge_api.py -v
 
 | Version | Status | Notes |
 |---------|--------|-------|
-| 1.0 | ✅ Stable | Three-tier cache, privacy gatekeeper, seeding pipeline |
-| 2.0 | ✅ Stable | Bridge API (Port 8002), X-API-Key auth, classification on all responses, LFU eviction, hit tracking, GitHub Actions scheduler |
+| 1.0 | Stable | Three-tier cache, privacy gatekeeper, seeding pipeline |
+| 2.0 | Stable | Bridge API (Port 8002), X-API-Key auth, classification on all responses, LFU eviction, hit tracking, GitHub Actions scheduler |
 
 ---
 
