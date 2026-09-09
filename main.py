@@ -6,7 +6,7 @@ import torch
 from dotenv import load_dotenv
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from supabase import create_client, Client
 
 load_dotenv()
@@ -50,6 +50,10 @@ CLASSIFIER_TIMEOUT = 5   # seconds
 
 class QueryRequest(BaseModel):
     prompt: str
+
+class StoreRequest(BaseModel):
+    prompt:   str = Field(..., min_length=1, description="The user prompt to store.")
+    response: str = Field(..., min_length=1, description="The LLM response to cache.")
 
 # --- Helpers ---
 
@@ -107,6 +111,31 @@ def classify_query(query: str) -> dict:
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "cache_api", "device": device}
+
+
+# --- Cache Store Endpoint ---
+@app.post("/store")
+async def store_entry(request: StoreRequest):
+    """
+    Compute embedding for the prompt and insert into shared_llm_cache.
+    No duplicate check — the caller (bridge) is responsible for only
+    calling this on a confirmed cache miss.
+    """
+    prompt_text   = request.prompt.strip()
+    response_text = request.response.strip()
+
+    # Compute embedding using the already-loaded model
+    embedding = embedding_model.encode(prompt_text).tolist()
+
+    result = supabase.table("shared_llm_cache").insert({
+        "query_text":    prompt_text,
+        "response_text": response_text,
+        "embedding":     embedding,
+    }).execute()
+
+    row_id = result.data[0]["id"] if result.data else None
+    print(f"[STORE] Inserted row id={row_id} query='{prompt_text[:50]}'")
+    return {"status": "ok", "id": row_id}
 
 # --- Core Query Endpoint ---
 @app.post("/query")
