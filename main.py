@@ -142,6 +142,7 @@ async def store_entry(request: StoreRequest):
 async def process_query(request: QueryRequest, background_tasks: BackgroundTasks):
     """
     Three-tier cache lookup. Returns a hit (with cached response + classification)
+    Two-tier cache lookup. Returns a hit (with cached response + classification)
     or a miss (with classification). No LLM generation happens here — that is
     handled by your application.
 
@@ -172,9 +173,11 @@ async def process_query(request: QueryRequest, background_tasks: BackgroundTasks
         }
 
     # 2. Embed the query
+    # 1. Embed the query
     query_vector = embedding_model.encode(user_prompt).tolist()
 
     # 3. Tier 2: Semantic DB Match
+    # 2. Tier 1: Semantic DB Match
     try:
         db_search = supabase.rpc(
             "match_shared_cache",
@@ -230,6 +233,7 @@ async def process_query(request: QueryRequest, background_tasks: BackgroundTasks
         print(f"Vector/Reranker search failed: {e}")
 
     # 4. Cache Miss — no LLM generation here.
+    # 3. Cache Miss — no LLM generation here.
     # Classify so the calling application knows whether this query type is
     # safe to cache after LLM generation:
     #   GENERAL  → safe to cache (general world knowledge)
@@ -250,4 +254,4 @@ async def process_query(request: QueryRequest, background_tasks: BackgroundTasks
             "decision_layer":     classification["decision_layer"],
             "heuristic_reason":   classification["heuristic_reason"],
         }
-    }
+    }
